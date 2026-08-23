@@ -154,7 +154,6 @@ describe('host-native repository tooling', () => {
       lifecycle: 'pre-production',
       developmentMode: 'standard',
       verificationCommands: ['pnpm test'],
-      additionalGuidance: '',
       occurredAtMs: 1,
     });
     try {

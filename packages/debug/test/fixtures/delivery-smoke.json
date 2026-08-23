@@ -3,8 +3,7 @@
   "repository": {
     "lifecycle": "pre-production",
     "developmentMode": "react-storybook",
-    "verificationCommands": [],
-    "additionalGuidance": ""
+    "verificationCommands": []
   },
   "delivery": {
     "title": "Add a greeting",

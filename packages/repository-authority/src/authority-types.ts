@@ -6,7 +6,6 @@ export interface RepositoryAuthorityConfiguration {
   readonly lifecycle: RepositoryLifecycle;
   readonly developmentMode: RepositoryDevelopmentMode;
   readonly verificationCommands: readonly string[];
-  readonly additionalGuidance: string;
   readonly updatedAtMs: number;
 }
 
@@ -14,7 +13,6 @@ export interface RepositoryAuthorityConfigurationInput {
   readonly lifecycle: RepositoryLifecycle;
   readonly developmentMode: RepositoryDevelopmentMode;
   readonly verificationCommands: readonly string[];
-  readonly additionalGuidance: string;
   readonly occurredAtMs: number;
 }
 

@@ -113,7 +113,6 @@ export function buildDeliveryRoleAssignment(input: {
       repository: {
         lifecycle: configuration.lifecycle,
         developmentMode: configuration.developmentMode,
-        additionalGuidance: configuration.additionalGuidance,
       },
     },
   };

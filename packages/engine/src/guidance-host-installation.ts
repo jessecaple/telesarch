@@ -72,7 +72,6 @@ function codexArtifacts(
         'model_reasoning_effort = "medium"',
         `developer_instructions = ${tomlString(roleDefinitionPreamble(role))}`,
         `sandbox_mode = ${tomlString(codexSandbox(role))}`,
-        'project_doc_max_bytes = 0',
         '',
         '[mcp_servers.telesarch]',
         ...codexMcpTransport(cliCommand, 'session'),

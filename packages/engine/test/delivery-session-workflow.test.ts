@@ -48,7 +48,6 @@ describe('delivery session workflow', () => {
       lifecycle: 'pre-production',
       developmentMode: 'react-storybook',
       verificationCommands: ['pnpm test'],
-      additionalGuidance: 'Keep the interface compact.',
     });
 
     expect(inspectRepositorySetup(repository)).toMatchObject({
@@ -57,7 +56,6 @@ describe('delivery session workflow', () => {
         lifecycle: 'pre-production',
         developmentMode: 'react-storybook',
         verificationCommands: ['pnpm test'],
-        additionalGuidance: 'Keep the interface compact.',
       },
     });
   });
@@ -68,7 +66,6 @@ describe('delivery session workflow', () => {
       lifecycle: 'pre-production',
       developmentMode: 'react-storybook',
       verificationCommands: [],
-      additionalGuidance: '',
     });
     const session = new DeliverySessionWorkflow(repository, contractsRoot);
 
@@ -216,7 +213,6 @@ describe('delivery session workflow', () => {
       lifecycle: 'pre-production',
       developmentMode: 'standard',
       verificationCommands: [],
-      additionalGuidance: '',
     });
     const creatingSession = new DeliverySessionWorkflow(
       repository,
@@ -269,7 +265,6 @@ describe('delivery session workflow', () => {
       lifecycle: 'pre-production',
       developmentMode: 'standard',
       verificationCommands: [],
-      additionalGuidance: '',
     });
     const creatingSession = new DeliverySessionWorkflow(
       repository,
@@ -296,7 +291,6 @@ describe('delivery session workflow', () => {
       lifecycle: 'pre-production',
       developmentMode: 'standard',
       verificationCommands: [],
-      additionalGuidance: '',
     });
     const session = new DeliverySessionWorkflow(repository, contractsRoot);
     await session.beginDelivery(intent('Inspect delivery'));

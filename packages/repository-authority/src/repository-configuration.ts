@@ -17,7 +17,6 @@ interface ConfigurationRow {
   readonly lifecycle: RepositoryAuthorityConfiguration['lifecycle'];
   readonly development_mode: RepositoryAuthorityConfiguration['developmentMode'];
   readonly verification_commands_json: string;
-  readonly additional_guidance: string;
   readonly updated_at_ms: number;
 }
 
@@ -47,14 +46,13 @@ export function createRepositoryConfiguration(
       .prepare(
         `INSERT INTO repository_configuration
           (singleton, revision, lifecycle, development_mode,
-           verification_commands_json, additional_guidance, updated_at_ms)
-         VALUES (1, 1, ?, ?, ?, ?, ?)`,
+           verification_commands_json, updated_at_ms)
+         VALUES (1, 1, ?, ?, ?, ?)`,
       )
       .run(
         input.lifecycle,
         input.developmentMode,
         JSON.stringify(input.verificationCommands),
-        input.additionalGuidance,
         input.occurredAtMs,
       );
     return readConfiguration(database);
@@ -75,15 +73,13 @@ export function updateRepositoryConfiguration(
           .prepare(
             `UPDATE repository_configuration
            SET revision = revision + 1, lifecycle = ?, development_mode = ?,
-               verification_commands_json = ?, additional_guidance = ?,
-               updated_at_ms = ?
+               verification_commands_json = ?, updated_at_ms = ?
            WHERE singleton = 1 AND revision = ?`,
           )
           .run(
             input.lifecycle,
             input.developmentMode,
             JSON.stringify(input.verificationCommands),
-            input.additionalGuidance,
             input.occurredAtMs,
             input.expectedRevision,
           );
@@ -122,7 +118,6 @@ function mapConfiguration(
     verificationCommands: JSON.parse(
       row.verification_commands_json,
     ) as string[],
-    additionalGuidance: row.additional_guidance,
     updatedAtMs: row.updated_at_ms,
   };
 }
@@ -144,5 +139,5 @@ function validateConfiguration(
 }
 
 const configurationSelect = `SELECT singleton, revision, lifecycle,
-  development_mode, verification_commands_json, additional_guidance,
-  updated_at_ms FROM repository_configuration`;
+  development_mode, verification_commands_json, updated_at_ms
+  FROM repository_configuration`;

@@ -29,7 +29,6 @@ export interface DeliveryDebugScenario {
     readonly lifecycle: 'pre-production' | 'maintained';
     readonly developmentMode: 'standard' | 'react-storybook';
     readonly verificationCommands: readonly string[];
-    readonly additionalGuidance: string;
   };
   readonly delivery: Omit<
     AcceptedDeliveryIntent,
@@ -92,10 +91,6 @@ function validateScenario(value: unknown): DeliveryDebugScenario {
       verificationCommands: strings(
         repository.verificationCommands,
         'repository.verificationCommands',
-      ),
-      additionalGuidance: stringValue(
-        repository.additionalGuidance,
-        'repository.additionalGuidance',
       ),
     },
     delivery: {
