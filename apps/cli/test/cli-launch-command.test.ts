@@ -42,13 +42,31 @@ describe('standalone CLI launch command', () => {
         executablePath: '/tmp/npm/node',
         executableArguments: [],
         entryPath: '/tmp/npm/telesarch.js',
-        packageVersion: '0.1.0',
+        packageSpecifier: 'telesarch@0.1.0',
       }),
     ).toEqual([
       'npm',
       'exec',
       '--yes',
       '--package=telesarch@0.1.0',
+      '--',
+      'telesarch',
+    ]);
+  });
+
+  it('registers a local npm package for pre-publish testing', () => {
+    expect(
+      currentCliLaunchCommand({
+        executablePath: '/tmp/npm/node',
+        executableArguments: [],
+        entryPath: '/tmp/npm/telesarch.js',
+        packageSpecifier: 'file:/tmp/telesarch-0.1.0.tgz',
+      }),
+    ).toEqual([
+      'npm',
+      'exec',
+      '--yes',
+      '--package=file:/tmp/telesarch-0.1.0.tgz',
       '--',
       'telesarch',
     ]);
