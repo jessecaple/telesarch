@@ -12,7 +12,6 @@ const configuration = z.object({
   lifecycle: z.enum(['pre-production', 'maintained']),
   developmentMode: z.enum(['standard', 'react-storybook']),
   verificationCommands: strings,
-  additionalGuidance: z.string(),
 });
 const bounded = {
   offset: z.number().int().min(0).optional(),

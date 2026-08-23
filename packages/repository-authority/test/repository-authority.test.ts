@@ -55,7 +55,6 @@ describe('repository-local authority', () => {
       lifecycle: 'pre-production',
       developmentMode: 'standard',
       verificationCommands: ['pnpm test', 'pnpm typecheck'],
-      additionalGuidance: 'Keep public contracts small.',
     });
 
     const worktree = join(fixture.directory, 'worktree');
@@ -134,7 +133,6 @@ describe('repository-local authority', () => {
         lifecycle: 'maintained',
         developmentMode: 'react-storybook',
         verificationCommands: ['pnpm test'],
-        additionalGuidance: 'Preserve the public protocol.',
         occurredAtMs: 2,
       }),
     ).toEqual({
@@ -142,7 +140,6 @@ describe('repository-local authority', () => {
       lifecycle: 'maintained',
       developmentMode: 'react-storybook',
       verificationCommands: ['pnpm test'],
-      additionalGuidance: 'Preserve the public protocol.',
       updatedAtMs: 2,
     });
     expect(() =>

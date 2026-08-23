@@ -67,7 +67,7 @@ describe('session host installation', () => {
     expect(implementation?.content).toContain(
       'sandbox_mode = "workspace-write"',
     );
-    expect(implementation?.content).toContain('project_doc_max_bytes = 0');
+    expect(implementation?.content).not.toContain('project_doc_max_bytes');
     expect(decomposition?.content).toContain('sandbox_mode = "read-only"');
     expect(decomposition?.content).toContain('[mcp_servers.telesarch-role]');
     expect(decomposition?.content).toContain('command = "npm"');

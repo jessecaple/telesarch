@@ -28,7 +28,6 @@ describe('clear-deliveries', () => {
       lifecycle: 'pre-production',
       developmentMode: 'standard',
       verificationCommands: [],
-      additionalGuidance: '',
     });
     const workflow = new DeliverySessionWorkflow(directory, '/contracts');
     await workflow.beginDelivery(intent('First'));

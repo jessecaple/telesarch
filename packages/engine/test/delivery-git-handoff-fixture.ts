@@ -61,7 +61,6 @@ export class DeliveryGitHandoffFixture {
       lifecycle: 'pre-production',
       developmentMode: 'standard',
       verificationCommands: ['pnpm test'],
-      additionalGuidance: '',
       occurredAtMs: 1,
     });
     const pullRequest = pullRequestRecord();

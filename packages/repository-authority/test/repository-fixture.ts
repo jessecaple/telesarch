@@ -36,7 +36,6 @@ export const testConfiguration: RepositoryAuthorityConfigurationInput = {
   lifecycle: 'pre-production',
   developmentMode: 'standard',
   verificationCommands: ['pnpm test', 'pnpm typecheck'],
-  additionalGuidance: 'Keep public contracts small.',
   occurredAtMs: 1,
 };
 

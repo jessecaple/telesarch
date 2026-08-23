@@ -73,7 +73,6 @@ describe('session MCP surface', () => {
       lifecycle: 'pre-production',
       developmentMode: 'react-storybook',
       verificationCommands: ['pnpm test'],
-      additionalGuidance: '',
     } as const;
 
     const response = await required(client).callTool({

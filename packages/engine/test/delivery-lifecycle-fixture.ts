@@ -35,7 +35,6 @@ export class DeliveryLifecycleFixture {
       lifecycle: 'pre-production',
       developmentMode: 'standard',
       verificationCommands: ['pnpm test'],
-      additionalGuidance: '',
       occurredAtMs: this.nextTime(),
     }).database;
     this.lifecycle = new DeliveryLifecycle(this.authority);

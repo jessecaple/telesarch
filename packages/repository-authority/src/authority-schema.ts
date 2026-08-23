@@ -17,7 +17,6 @@ export const repositoryAuthoritySchema: SqliteMigration = {
       json_valid(verification_commands_json) AND
       json_type(verification_commands_json) = 'array'
     ),
-    additional_guidance TEXT NOT NULL,
     updated_at_ms INTEGER NOT NULL CHECK (updated_at_ms >= 0)
   ) STRICT;
 
