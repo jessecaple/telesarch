@@ -77,13 +77,7 @@ describe('delivery debug scenario', () => {
       'Working',
       'Complete',
     ]);
-    expect(
-      result.states.flatMap((state) =>
-        state.state === 'Working' && state.assignment !== undefined
-          ? [state.assignment.role]
-          : [],
-      ),
-    ).toContain('storybook-composition');
+    expect(result.roles).toContain('storybook-composition');
     expect(result.handoff).toMatchObject({
       status: 'manual',
       branchName: expect.stringMatching(/^telesarch\//),

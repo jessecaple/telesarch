@@ -1,4 +1,8 @@
 import { McpServer } from '@modelcontextprotocol/server';
+import type {
+  DeliveryRoleAssignment,
+  DeliverySessionState,
+} from '@telesarch/engine';
 import { z } from 'zod/v4';
 
 import type { RepositorySessionExecutors } from './session-tool-executors.js';
@@ -130,10 +134,10 @@ export function createSessionMcp(
     'next_action',
     {
       description:
-        'Advance engine-owned phases. It runs verification itself or returns the one role assignment the coordinating session must launch.',
+        'Advance engine-owned phases. It runs verification itself or returns the one role launch directive the coordinating session must follow.',
       inputSchema: z.object({}),
     },
-    async () => result(await executors.workflow.nextAction()),
+    async () => result(coordinatorState(await executors.workflow.nextAction())),
   );
 
   server.registerTool(
@@ -339,5 +343,23 @@ function result(value: unknown) {
   return {
     content: [{ type: 'text' as const, text: JSON.stringify(value) }],
     structuredContent: value as Record<string, unknown>,
+  };
+}
+
+function coordinatorState(state: DeliverySessionState) {
+  if (state.state !== 'Working' || state.assignment === undefined) return state;
+  return {
+    ...state,
+    assignment: launchDirective(state.assignment),
+  };
+}
+
+function launchDirective(assignment: DeliveryRoleAssignment) {
+  return {
+    agentName: assignment.agentName,
+    subjectNodeId: assignment.subjectNodeId,
+    workingDirectory: assignment.workingDirectory,
+    responsibilityKey: assignment.responsibilityKey,
+    resume: assignment.resume,
   };
 }

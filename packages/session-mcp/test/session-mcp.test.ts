@@ -85,6 +85,46 @@ describe('session MCP surface', () => {
     expect(response.structuredContent).toEqual({ initialized: true });
   });
 
+  it('returns only the role launch fields needed by the coordinator', async () => {
+    const nextAction = vi.fn().mockResolvedValue({
+      state: 'Working',
+      message: 'Run decomposition.',
+      assignment: {
+        actionId: 'action-one',
+        deliveryId: 'delivery-one',
+        subjectNodeId: 'delivery-one:root',
+        role: 'decomposition',
+        call: 'pending-node',
+        agentName: 'telesarch-decomposition',
+        responsibilityKey: 'decomposition:action-one',
+        resume: false,
+        workspaceAccess: 'read-only',
+        workingDirectory: '/repo/.worktrees/delivery-one',
+        instructions: ['internal instructions'],
+        resultSchema: { type: 'object' },
+        input: { internal: true },
+      },
+    });
+    await connect(executors({ nextAction }));
+
+    const response = await required(client).callTool({
+      name: 'next_action',
+      arguments: {},
+    });
+
+    expect(response.structuredContent).toEqual({
+      state: 'Working',
+      message: 'Run decomposition.',
+      assignment: {
+        agentName: 'telesarch-decomposition',
+        subjectNodeId: 'delivery-one:root',
+        workingDirectory: '/repo/.worktrees/delivery-one',
+        responsibilityKey: 'decomposition:action-one',
+        resume: false,
+      },
+    });
+  });
+
   it('routes bounded context without rebuilding it in the adapter', async () => {
     const readiness = vi.fn().mockReturnValue({ ready: [] });
     await connect(executors({ readiness }));
@@ -142,7 +182,8 @@ function executors(
     selectDelivery:
       overrides.selectDelivery ?? vi.fn().mockReturnValue({ state: 'Working' }),
     beginDelivery: vi.fn().mockResolvedValue({ state: 'Working' }),
-    nextAction: vi.fn().mockResolvedValue({ state: 'Working' }),
+    nextAction:
+      overrides.nextAction ?? vi.fn().mockResolvedValue({ state: 'Working' }),
     answerDecision: vi.fn().mockReturnValue({ state: 'Working' }),
     submitManualTest: vi.fn().mockReturnValue({ state: 'Working' }),
     requestRevision: vi.fn().mockReturnValue({ state: 'Working' }),

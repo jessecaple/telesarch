@@ -8,6 +8,7 @@ import {
 } from '@modelcontextprotocol/server';
 import type {
   DeliveryHandoffResult,
+  DeliveryRoleAssignment,
   DeliverySessionState,
 } from '@telesarch/engine';
 import { createRoleMcp, RepositoryRoleExecutors } from '@telesarch/role-mcp';
@@ -24,8 +25,25 @@ import {
 
 export interface DeliveryScenarioResult {
   readonly states: readonly DeliverySessionState[];
+  readonly roles: readonly DeliveryRoleAssignment['role'][];
   readonly handoff: DeliveryHandoffResult;
 }
+
+interface RoleLaunchDirective {
+  readonly agentName: string;
+  readonly subjectNodeId: string;
+  readonly workingDirectory: string;
+  readonly responsibilityKey: string;
+  readonly resume: boolean;
+}
+
+type CoordinatorSessionState =
+  | {
+      readonly state: 'Working';
+      readonly message: string;
+      readonly assignment?: RoleLaunchDirective;
+    }
+  | Exclude<DeliverySessionState, { readonly state: 'Working' }>;
 
 /** Runs one deterministic fixture through the production MCP and workflows. */
 export async function runDeliveryScenario(
@@ -40,49 +58,57 @@ export async function runDeliveryScenario(
   );
   const deliveryWorktree = started.workflow.listDeliveries()[0].worktreePath;
   const states: DeliverySessionState[] = [started.state];
+  const roles: DeliveryRoleAssignment['role'][] = [];
   for (const step of scenario.steps) {
-    const designated = await callSession<DeliverySessionState>(
+    const designated = await callSession<CoordinatorSessionState>(
       deliveryWorktree,
       contractsRoot,
       'next_action',
     );
-    const firstAssignment = assignment(designated);
-    const resumed = await callSession<DeliverySessionState>(
-      firstAssignment.workingDirectory,
+    const firstLaunch = assignment(designated);
+    const firstAssignment = await callRole<DeliveryRoleAssignment>(
+      firstLaunch.workingDirectory,
+      contractsRoot,
+      'pull_assignment',
+      { nodeId: firstLaunch.subjectNodeId },
+    );
+    const resumed = await callSession<CoordinatorSessionState>(
+      firstLaunch.workingDirectory,
       contractsRoot,
       'next_action',
     );
-    const currentAssignment = assignment(resumed);
-    if (
-      currentAssignment.actionId !== firstAssignment.actionId ||
-      !currentAssignment.resume
-    ) {
+    const currentLaunch = assignment(resumed);
+    if (currentLaunch.responsibilityKey !== firstLaunch.responsibilityKey) {
       throw new Error('The interrupted assignment did not resume.');
+    }
+    if (!currentLaunch.resume) {
+      throw new Error('The interrupted assignment was not marked to resume.');
+    }
+    const currentAssignment = await callRole<DeliveryRoleAssignment>(
+      currentLaunch.workingDirectory,
+      contractsRoot,
+      'pull_assignment',
+      { nodeId: currentLaunch.subjectNodeId },
+    );
+    if (currentAssignment.actionId !== firstAssignment.actionId) {
+      throw new Error('The role MCP returned a different assignment.');
     }
     if (currentAssignment.role !== step.role) {
       throw new Error(
         `Expected ${step.role}, received ${currentAssignment.role}.`,
       );
     }
-    const roleAssignment = await callRole<{ readonly actionId: string }>(
-      currentAssignment.workingDirectory,
-      contractsRoot,
-      'pull_assignment',
-      { nodeId: currentAssignment.subjectNodeId },
-    );
-    if (roleAssignment.actionId !== currentAssignment.actionId) {
-      throw new Error('The role MCP returned a different assignment.');
-    }
-    await applyFiles(currentAssignment.workingDirectory, step);
+    await applyFiles(currentLaunch.workingDirectory, step);
     await callRole(
-      currentAssignment.workingDirectory,
+      currentLaunch.workingDirectory,
       contractsRoot,
       'submit_result',
-      { nodeId: currentAssignment.subjectNodeId, result: step.result },
+      { nodeId: currentLaunch.subjectNodeId, result: step.result },
     );
-    states.push(resumed);
+    states.push(withoutAssignment(resumed));
+    roles.push(currentAssignment.role);
   }
-  const complete = await callSession<DeliverySessionState>(
+  const complete = await callSession<CoordinatorSessionState>(
     deliveryWorktree,
     contractsRoot,
     'next_action',
@@ -93,6 +119,7 @@ export async function runDeliveryScenario(
   states.push(complete);
   return {
     states,
+    roles,
     handoff: await callSession<DeliveryHandoffResult>(
       deliveryWorktree,
       contractsRoot,
@@ -157,11 +184,19 @@ async function callMcp<T>(
   }
 }
 
-function assignment(state: DeliverySessionState) {
+function assignment(state: CoordinatorSessionState) {
   if (state.state !== 'Working' || state.assignment === undefined) {
     throw new Error(`Expected an assignment, received ${state.state}.`);
   }
   return state.assignment;
+}
+
+function withoutAssignment(
+  state: CoordinatorSessionState,
+): DeliverySessionState {
+  return state.state === 'Working'
+    ? { state: state.state, message: state.message }
+    : state;
 }
 
 async function applyFiles(
