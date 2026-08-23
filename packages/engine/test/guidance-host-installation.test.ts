@@ -80,10 +80,10 @@ describe('session host installation', () => {
       'Do not use the telesarch-workflow skill',
     );
     expect(decomposition?.content).toContain(
-      'Copy its complete value verbatim, including every colon and suffix',
+      'tools.mcp__telesarch_role__pull_assignment',
     );
     expect(decomposition?.content).toContain(
-      'After it succeeds, end with exactly `Completed.`',
+      'tools.mcp__telesarch_role__submit_result',
     );
     expect(decomposition?.content).toContain(
       '[mcp_servers.telesarch-storybook]',
