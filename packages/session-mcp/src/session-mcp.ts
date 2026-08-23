@@ -10,11 +10,6 @@ const configuration = z.object({
   verificationCommands: strings,
   additionalGuidance: z.string(),
 });
-const confirmation = {
-  confirmed: z
-    .literal(true)
-    .describe('Set only after the developer explicitly confirms this action.'),
-};
 const bounded = {
   offset: z.number().int().min(0).optional(),
   limit: z.number().int().min(1).max(200).optional(),
@@ -66,12 +61,9 @@ export function createSessionMcp(
     {
       description:
         'Initialize Telesarch after the developer explicitly confirms every reported setup choice.',
-      inputSchema: configuration.extend(confirmation),
+      inputSchema: configuration,
     },
-    async ({ confirmed, ...params }) => {
-      void confirmed;
-      return result(executors.initializeRepository(params));
-    },
+    async (params) => result(executors.initializeRepository(params)),
   );
 
   server.registerTool(
@@ -79,12 +71,9 @@ export function createSessionMcp(
     {
       description:
         'Replace the repository workflow configuration after discussing the changed choices with the developer.',
-      inputSchema: configuration.extend(confirmation),
+      inputSchema: configuration,
     },
-    async ({ confirmed, ...params }) => {
-      void confirmed;
-      return result(executors.configureRepository(params));
-    },
+    async (params) => result(executors.configureRepository(params)),
   );
 
   server.registerTool(
@@ -132,13 +121,9 @@ export function createSessionMcp(
         completionCriteria: strings,
         notInScope: strings,
         designHorizon: strings,
-        ...confirmation,
       }),
     },
-    async ({ confirmed, ...params }) => {
-      void confirmed;
-      return result(await executors.workflow.beginDelivery(params));
-    },
+    async (params) => result(await executors.workflow.beginDelivery(params)),
   );
 
   server.registerTool(
@@ -226,7 +211,7 @@ export function createSessionMcp(
     {
       description:
         'Permit one explicit retry after a failed pull-request attempt.',
-      inputSchema: z.object(confirmation),
+      inputSchema: z.object({}),
     },
     async () => result(executors.workflow.permitPullRequestRetry()),
   );
@@ -235,7 +220,7 @@ export function createSessionMcp(
     {
       description:
         'Remove delivery resources after the developer confirms integration.',
-      inputSchema: z.object(confirmation),
+      inputSchema: z.object({}),
     },
     async () => result(await executors.workflow.confirmIntegrated()),
   );
@@ -244,7 +229,7 @@ export function createSessionMcp(
     {
       description:
         'Abandon the selected delivery while preserving recoverable Git work.',
-      inputSchema: z.object(confirmation),
+      inputSchema: z.object({}),
     },
     async () => result(await executors.workflow.abandon()),
   );

@@ -66,7 +66,7 @@ describe('session MCP surface', () => {
     expect(selectDelivery).toHaveBeenCalledWith('delivery-one');
   });
 
-  it('requires explicit confirmation on repository initialization', async () => {
+  it('routes repository initialization after host confirmation', async () => {
     const initializeRepository = vi.fn().mockReturnValue({ initialized: true });
     await connect(executors({ initializeRepository }));
     const configuration = {
@@ -76,16 +76,9 @@ describe('session MCP surface', () => {
       additionalGuidance: '',
     } as const;
 
-    const rejected = await required(client).callTool({
-      name: 'initialize_repository',
-      arguments: configuration,
-    });
-    expect(rejected.isError).toBe(true);
-    expect(initializeRepository).not.toHaveBeenCalled();
-
     const response = await required(client).callTool({
       name: 'initialize_repository',
-      arguments: { ...configuration, confirmed: true },
+      arguments: configuration,
     });
 
     expect(initializeRepository).toHaveBeenCalledWith(configuration);
