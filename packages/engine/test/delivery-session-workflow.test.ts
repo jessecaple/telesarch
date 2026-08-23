@@ -113,6 +113,9 @@ describe('delivery session workflow', () => {
       firstAssignment.workingDirectory,
       contractsRoot,
     );
+    expect(() => decomposer.pullAssignment(firstAssignment.deliveryId)).toThrow(
+      `The supplied value is the delivery ID. Retry with the complete current node ID: ${firstAssignment.subjectNodeId}`,
+    );
     expect(
       decomposer.pullAssignment(firstAssignment.subjectNodeId),
     ).toMatchObject({ actionId: firstAssignment.actionId });
