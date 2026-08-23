@@ -131,11 +131,24 @@ export class DeliveryRoleWorkflow {
     nodeId: string,
   ): DeliveryActionRecord {
     const delivery = readDeliveryByNode(authority.database, nodeId);
-    if (delivery === undefined)
+    if (delivery === undefined) {
+      const mistakenDelivery = readDelivery(authority.database, nodeId);
+      const currentAction =
+        mistakenDelivery === undefined
+          ? undefined
+          : readOpenDeliveryActions(
+              authority.database,
+              mistakenDelivery.deliveryId,
+            ).find(
+              (action) => action.nodeId !== undefined && roleAction(action),
+            );
       throw new AgentResultRejectionError(
         'stale',
-        'This node does not belong to an active delivery.',
+        currentAction?.nodeId === undefined
+          ? 'This node does not belong to an active delivery.'
+          : `The supplied value is the delivery ID. Retry with the complete current node ID: ${currentAction.nodeId}`,
       );
+    }
     const actions = readOpenDeliveryActions(
       authority.database,
       delivery.deliveryId,

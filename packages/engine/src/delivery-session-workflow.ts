@@ -17,6 +17,7 @@ import { StorybookProcessManager } from '@telesarch/storybook';
 import { DeliveryGitHandoff } from './delivery-git-handoff.js';
 import type {
   AcceptedDeliveryIntent,
+  DeliveryCleanupResult,
   DeliveryHandoffResult,
   DeliveryHandoffSummary,
 } from './delivery-git-handoff-types.js';
@@ -234,6 +235,16 @@ export class DeliverySessionWorkflow {
     return this.withAsyncHandoff((handoff, delivery) =>
       handoff.abandon(delivery.deliveryId),
     );
+  }
+
+  async clearDeliveries(): Promise<readonly DeliveryCleanupResult[]> {
+    const deliveries = this.listDeliveries();
+    const cleared: DeliveryCleanupResult[] = [];
+    for (const delivery of deliveries) {
+      this.selectedDeliveryId = delivery.deliveryId;
+      cleared.push(await this.abandon());
+    }
+    return cleared;
   }
 
   private completeWaiting(kind: string, result: unknown): DeliverySessionState {

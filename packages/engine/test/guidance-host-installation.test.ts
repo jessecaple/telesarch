@@ -27,14 +27,19 @@ describe('session host installation', () => {
         'Never use inside a Telesarch role agent.',
       );
       expect(skill?.content).toContain(
-        'copy `assignment.subjectNodeId` exactly',
+        '`{"nodeId":"<assignment.subjectNodeId>"}`',
       );
-      expect(skill?.content).toContain('Never substitute the delivery ID.');
+      expect(skill?.content).toContain('Never pass the delivery ID.');
       expect(skill?.content).toContain('`fork_turns: "none"` in Codex');
       expect(skill?.content).toContain(
-        'wait once with the longest supported timeout',
+        'wait with the longest supported timeout',
       );
-      expect(skill?.content).toContain('Do not poll the role');
+      expect(skill?.content).toContain(
+        'A role message or a wait result with no completed role means the role is still running',
+      );
+      expect(skill?.content).toContain(
+        'Call `next_action` only after that role returns `FINAL_ANSWER`',
+      );
       expect(
         paths.some((path) => path.includes('telesarch-decomposition')),
       ).toBe(true);
@@ -73,6 +78,9 @@ describe('session host installation', () => {
     expect(decomposition?.content).toContain('delivery_revision_impact');
     expect(decomposition?.content).toContain(
       'Do not use the telesarch-workflow skill',
+    );
+    expect(decomposition?.content).toContain(
+      'Copy its complete value verbatim, including every colon and suffix',
     );
     expect(decomposition?.content).toContain(
       '[mcp_servers.telesarch-storybook]',

@@ -1,6 +1,12 @@
 import { resolve } from 'node:path';
 
-export type CliCommand = 'install-host' | 'status' | 'inspect' | 'mcp' | 'help';
+export type CliCommand =
+  | 'install-host'
+  | 'status'
+  | 'inspect'
+  | 'clear-deliveries'
+  | 'mcp'
+  | 'help';
 export type McpSurface = 'session' | 'role' | 'storybook';
 
 export interface CliArguments {
@@ -65,6 +71,7 @@ function parseCommand(value: string): CliCommand {
     'install-host',
     'status',
     'inspect',
+    'clear-deliveries',
     'mcp',
     'help',
   ];

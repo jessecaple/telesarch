@@ -42,7 +42,7 @@ export function createRoleMcp(executors: RepositoryRoleExecutors): McpServer {
     'pull_assignment',
     {
       description:
-        'Pull the one current assignment for the supplied node. Call this first.',
+        'Pull the current assignment. Copy the complete nodeId from the launch task, including its delivery prefix and node suffix. Call this first.',
       inputSchema: z.object(subject),
       annotations: readOnly,
     },
