@@ -103,6 +103,9 @@ describe('delivery session workflow', () => {
     expect(firstAssignment.instructions.join('\n')).toContain(
       'it is not a search for the smallest possible fragment.',
     );
+    expect(firstAssignment.instructions.join('\n')).toContain(
+      'One-attempt size is necessary but not sufficient.',
+    );
     const restartedSession = new DeliverySessionWorkflow(
       repository,
       contractsRoot,
