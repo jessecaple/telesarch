@@ -14,6 +14,7 @@ import {
   userDecisionResult,
   verificationResult,
 } from './delivery-action-results.js';
+import { actionsAfterLatestAppliedRevision } from './delivery-action-scope.js';
 import { DeliveryLifecycleError } from './delivery-lifecycle-error.js';
 import {
   deliveryNodeId,
@@ -28,6 +29,7 @@ export function completedActionGraph(
   result: DeliveryActionResult,
 ): DeliveryGraph {
   const recorded = { ...action, result };
+  const currentActions = actionsAfterLatestAppliedRevision(actions);
   switch (action.kind) {
     case 'decomposition':
       return applyDecomposition(
@@ -51,8 +53,8 @@ export function completedActionGraph(
       return updateSubjectState(
         delivery,
         action,
-        correctionIsComplete(actions, action.nodeId)
-          ? hasManualTests(actions, action.nodeId, recorded)
+        correctionIsComplete(currentActions, action.nodeId)
+          ? hasManualTests(currentActions, action.nodeId, recorded)
             ? 'waiting'
             : 'completed'
           : 'running',
@@ -65,7 +67,7 @@ export function completedActionGraph(
         action,
         outcome.status === 'findings'
           ? 'running'
-          : hasManualTests(actions, action.nodeId)
+          : hasManualTests(currentActions, action.nodeId)
             ? 'waiting'
             : 'completed',
       );

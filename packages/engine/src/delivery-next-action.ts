@@ -12,6 +12,7 @@ import {
   userDecisionResult,
   verificationResult,
 } from './delivery-action-results.js';
+import { actionsAfterLatestAppliedRevision } from './delivery-action-scope.js';
 import { DeliveryLifecycleDataError } from './delivery-lifecycle-error.js';
 import {
   blockedDeliveryCone,
@@ -118,22 +119,6 @@ export function deriveDeliveryNextAction(
     kind: 'blocked',
     reason: 'No delivery work is eligible.',
   };
-}
-
-function actionsAfterLatestAppliedRevision(
-  actions: readonly DeliveryActionRecord[],
-): readonly DeliveryActionRecord[] {
-  const applied = [...actions]
-    .reverse()
-    .find(
-      (action) =>
-        action.kind === 'delivery-revision' &&
-        action.status === 'completed' &&
-        deliveryRevisionResult(action).status === 'applied',
-    );
-  return applied === undefined
-    ? actions
-    : actions.filter((action) => action.sequence > applied.sequence);
 }
 
 function deriveLeafAction(
