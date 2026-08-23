@@ -1,3 +1,5 @@
+import { existsSync } from 'node:fs';
+
 import {
   deleteDelivery,
   readDelivery,
@@ -13,6 +15,7 @@ import {
   refsContainingCommit,
   removeManagedWorktree,
   removeManagedWorktreeCheckout,
+  repositoryHasCommit,
   resolveCommit,
 } from '@telesarch/git';
 
@@ -83,13 +86,30 @@ export class DeliveryGitCleanup {
   async abandon(deliveryId: string): Promise<DeliveryCleanupResult> {
     const delivery = this.requireDelivery(deliveryId);
     await this.processes.stopDelivery(delivery.worktreePath, deliveryId);
-    if (changedPaths(delivery.worktreePath).length > 0) {
+    const checkoutExists = existsSync(delivery.worktreePath);
+    if (checkoutExists && changedPaths(delivery.worktreePath).length > 0) {
       await commitAll(
         delivery.worktreePath,
         `Preserve abandoned delivery: ${delivery.title}`,
       );
     }
-    const headCommit = currentCommit(delivery.worktreePath);
+    const headCommit = checkoutExists
+      ? currentCommit(delivery.worktreePath)
+      : this.branchCommit(delivery);
+    if (headCommit === undefined) {
+      await removeManagedWorktree(
+        this.primaryCheckout,
+        delivery.worktreePath,
+        delivery.branchName,
+        true,
+      );
+      this.delete(delivery);
+      return {
+        deliveryId,
+        removedWorktreePath: delivery.worktreePath,
+        removedBranchName: delivery.branchName,
+      };
+    }
     const ownRef = `refs/heads/${delivery.branchName}`;
     const reachableElsewhere = refsContainingCommit(
       this.primaryCheckout,
@@ -121,6 +141,13 @@ export class DeliveryGitCleanup {
           }
         : { removedBranchName: delivery.branchName }),
     };
+  }
+
+  private branchCommit(delivery: DeliveryRecord): string | undefined {
+    if (!repositoryHasCommit(this.primaryCheckout, delivery.branchName)) {
+      return undefined;
+    }
+    return resolveCommit(this.primaryCheckout, delivery.branchName);
   }
 
   private delete(delivery: DeliveryRecord): void {

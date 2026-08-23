@@ -25,6 +25,12 @@ describe('CLI arguments', () => {
       command: 'inspect',
       worktree: process.cwd(),
     });
+    expect(
+      parseArguments(['clear-deliveries', '--worktree', '/code/project']),
+    ).toEqual({
+      command: 'clear-deliveries',
+      worktree: '/code/project',
+    });
   });
 
   it('rejects removed and malformed commands', () => {

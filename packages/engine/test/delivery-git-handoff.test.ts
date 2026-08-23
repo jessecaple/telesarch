@@ -256,6 +256,25 @@ describe('delivery Git handoff', () => {
     );
   });
 
+  it('clears a stale delivery after its worktree and branch are gone', async () => {
+    const fixture = createFixture();
+    const delivery = await fixture.accept('stale');
+    git(
+      fixture.repository,
+      'worktree',
+      'remove',
+      '--force',
+      delivery.worktreePath,
+    );
+    git(fixture.repository, 'branch', '-D', delivery.branchName);
+
+    await expect(fixture.handoff.abandon('stale')).resolves.toMatchObject({
+      removedWorktreePath: delivery.worktreePath,
+      removedBranchName: delivery.branchName,
+    });
+    expect(readDelivery(fixture.authority.database, 'stale')).toBeUndefined();
+  });
+
   function createFixture(github = false): DeliveryGitHandoffFixture {
     const fixture = new DeliveryGitHandoffFixture(github);
     fixtures.push(fixture);

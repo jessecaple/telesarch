@@ -59,6 +59,14 @@ export async function runCli(
       print(inspectDelivery(args.worktree, args.deliveryId));
       return 0;
     }
+    if (args.command === 'clear-deliveries') {
+      const workflow = new DeliverySessionWorkflow(
+        args.worktree,
+        options.agentContractsRoot ?? defaultAgentContractsRoot(),
+      );
+      print({ cleared: await workflow.clearDeliveries() });
+      return 0;
+    }
     print(repositoryStatus(args.worktree, options.agentContractsRoot));
     return 0;
   } catch (error) {
@@ -96,6 +104,7 @@ function help(): string {
   telesarch install-host codex|claude
   telesarch status [--worktree PATH]
   telesarch inspect [DELIVERY_ID] [--worktree PATH]
+  telesarch clear-deliveries [--worktree PATH]
   telesarch mcp [session|role|storybook] [--worktree PATH]
 `;
 }
