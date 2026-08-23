@@ -13,6 +13,8 @@
     "format": "nx format:write --base=HEAD",
     "format:check": "prettier --check .",
     "lint": "nx affected -t lint --outputStyle=static",
+    "package:npm": "pnpm --filter @telesarch/cli package:npm",
+    "package:npm:check": "pnpm --filter @telesarch/cli package:npm:check",
     "telesarch": "tsx apps/cli/src/cli.ts",
     "test": "nx affected -t test --outputStyle=static",
     "typecheck": "nx run-many -t typecheck --outputStyle=static",

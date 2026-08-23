@@ -1,6 +1,6 @@
 {
   "name": "@telesarch/cli",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": true,
   "type": "module",
   "exports": {
@@ -11,7 +11,9 @@
   },
   "scripts": {
     "build": "tsc --project tsconfig.lib.json",
-    "lint": "eslint src test",
+    "lint": "eslint scripts src test",
+    "package:npm": "tsx scripts/build-npm-package.ts",
+    "package:npm:check": "pnpm package:npm && tsx scripts/check-npm-package.ts",
     "test": "vitest run",
     "typecheck": "tsc --project tsconfig.lib.json --noEmit"
   },
@@ -26,5 +28,8 @@
     "@telesarch/role-mcp": "workspace:*",
     "@telesarch/session-mcp": "workspace:*",
     "@telesarch/storybook": "workspace:*"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2"
   }
 }

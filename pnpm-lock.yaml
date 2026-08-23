@@ -71,6 +71,10 @@ importers:
       '@telesarch/storybook':
         specifier: workspace:*
         version: link:../../packages/storybook
+    devDependencies:
+      esbuild:
+        specifier: 0.28.2
+        version: 0.28.2
 
   packages/agent-contracts: {}
 
