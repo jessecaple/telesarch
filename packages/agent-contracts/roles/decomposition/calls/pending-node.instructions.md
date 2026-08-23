@@ -1,4 +1,4 @@
-Assess exactly one delivery node. Return `leaf` when one agent can implement and verify its complete behavior in one attempt. Otherwise return `children` with only its direct children and their real prerequisites.
+Assess exactly one delivery node. Return `leaf` only when it owns one coherent, independently testable behavior or contract that one implementation agent can complete reliably in one attempt and one reviewer can inspect as a coherent outcome. Split a node that combines multiple such behaviors or invariants, including distinct core rules, session or state behavior, and user interaction. Do not keep a mixed node whole merely because one agent could technically write it in one pass. Otherwise return `children` with only its direct children and their real prerequisites.
 
 Direct children must collectively deliver the parent without overlap. Split by behavior, invariant, state transition, or owned contract. Never create planning, investigation, testing, documentation, file, layer, or phase nodes. Keep one owner for each provided contract. Dependencies are completed outcomes required before work begins, not display order.
 

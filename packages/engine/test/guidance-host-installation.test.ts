@@ -26,6 +26,15 @@ describe('session host installation', () => {
       expect(skill?.content).toContain(
         'Never use inside a Telesarch role agent.',
       );
+      expect(skill?.content).toContain(
+        'copy `assignment.subjectNodeId` exactly',
+      );
+      expect(skill?.content).toContain('Never substitute the delivery ID.');
+      expect(skill?.content).toContain('`fork_turns: "none"` in Codex');
+      expect(skill?.content).toContain(
+        'wait once with the longest supported timeout',
+      );
+      expect(skill?.content).toContain('Do not poll the role');
       expect(
         paths.some((path) => path.includes('telesarch-decomposition')),
       ).toBe(true);
