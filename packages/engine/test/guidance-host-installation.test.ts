@@ -83,6 +83,9 @@ describe('session host installation', () => {
       'Copy its complete value verbatim, including every colon and suffix',
     );
     expect(decomposition?.content).toContain(
+      'After it succeeds, end with exactly `Completed.`',
+    );
+    expect(decomposition?.content).toContain(
       '[mcp_servers.telesarch-storybook]',
     );
     expect(decomposition?.content).toContain(
