@@ -2,7 +2,7 @@ export interface CliProcessInvocation {
   readonly executablePath: string;
   readonly executableArguments: readonly string[];
   readonly entryPath?: string;
-  readonly packageVersion?: string;
+  readonly packageSpecifier?: string;
 }
 
 declare const TELESARCH_PACKAGE_VERSION: string | undefined;
@@ -13,18 +13,19 @@ export function currentCliLaunchCommand(
     executablePath: process.execPath,
     executableArguments: process.execArgv,
     entryPath: process.argv[1],
-    packageVersion:
-      typeof TELESARCH_PACKAGE_VERSION === 'string'
-        ? TELESARCH_PACKAGE_VERSION
-        : undefined,
+    packageSpecifier:
+      process.env.TELESARCH_PACKAGE_SPEC?.trim() ||
+      (typeof TELESARCH_PACKAGE_VERSION === 'string'
+        ? `telesarch@${TELESARCH_PACKAGE_VERSION}`
+        : undefined),
   },
 ): readonly [string, ...string[]] {
-  if (invocation.packageVersion !== undefined) {
+  if (invocation.packageSpecifier !== undefined) {
     return [
       'npm',
       'exec',
       '--yes',
-      `--package=telesarch@${invocation.packageVersion}`,
+      `--package=${invocation.packageSpecifier}`,
       '--',
       'telesarch',
     ];

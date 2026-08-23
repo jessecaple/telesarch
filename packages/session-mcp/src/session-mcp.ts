@@ -1,8 +1,4 @@
-import {
-  acceptedContent,
-  inputRequired,
-  McpServer,
-} from '@modelcontextprotocol/server';
+import { McpServer } from '@modelcontextprotocol/server';
 import { z } from 'zod/v4';
 
 import type { RepositorySessionExecutors } from './session-tool-executors.js';
@@ -67,10 +63,7 @@ export function createSessionMcp(
         'Initialize Telesarch after the developer explicitly confirms every reported setup choice.',
       inputSchema: configuration,
     },
-    async (params, context) =>
-      confirmed(context, 'Initialize Telesarch in this repository?', () =>
-        executors.initializeRepository(params),
-      ),
+    async (params) => result(executors.initializeRepository(params)),
   );
 
   server.registerTool(
@@ -80,10 +73,7 @@ export function createSessionMcp(
         'Replace the repository workflow configuration after discussing the changed choices with the developer.',
       inputSchema: configuration,
     },
-    async (params, context) =>
-      confirmed(context, 'Apply this repository configuration?', () =>
-        executors.configureRepository(params),
-      ),
+    async (params) => result(executors.configureRepository(params)),
   );
 
   server.registerTool(
@@ -133,10 +123,7 @@ export function createSessionMcp(
         designHorizon: strings,
       }),
     },
-    async (params, context) =>
-      confirmed(context, `Begin delivery “${params.title}”?`, async () =>
-        executors.workflow.beginDelivery(params),
-      ),
+    async (params) => result(await executors.workflow.beginDelivery(params)),
   );
 
   server.registerTool(
@@ -226,10 +213,7 @@ export function createSessionMcp(
         'Permit one explicit retry after a failed pull-request attempt.',
       inputSchema: z.object({}),
     },
-    async (_, context) =>
-      confirmed(context, 'Retry the pull-request handoff?', () =>
-        executors.workflow.permitPullRequestRetry(),
-      ),
+    async () => result(executors.workflow.permitPullRequestRetry()),
   );
   server.registerTool(
     'confirm_integrated',
@@ -238,12 +222,7 @@ export function createSessionMcp(
         'Remove delivery resources after the developer confirms integration.',
       inputSchema: z.object({}),
     },
-    async (_, context) =>
-      confirmed(
-        context,
-        'Confirm this delivery is integrated and clean it up?',
-        () => executors.workflow.confirmIntegrated(),
-      ),
+    async () => result(await executors.workflow.confirmIntegrated()),
   );
   server.registerTool(
     'abandon_delivery',
@@ -252,10 +231,7 @@ export function createSessionMcp(
         'Abandon the selected delivery while preserving recoverable Git work.',
       inputSchema: z.object({}),
     },
-    async (_, context) =>
-      confirmed(context, 'Abandon this delivery?', () =>
-        executors.workflow.abandon(),
-      ),
+    async () => result(await executors.workflow.abandon()),
   );
   return server;
 }
@@ -351,34 +327,6 @@ function registerContextTools(
     async ({ view, ...params }) =>
       result(executors.sourceContext(view, params)),
   );
-}
-
-async function confirmed<T>(
-  context: { mcpReq?: { inputResponses?: Readonly<Record<string, unknown>> } },
-  message: string,
-  operation: () => T | Promise<T>,
-) {
-  const raw = context.mcpReq?.inputResponses?.confirm;
-  if (raw === undefined)
-    return inputRequired({
-      inputRequests: {
-        confirm: inputRequired.elicit({
-          message,
-          requestedSchema: {
-            type: 'object',
-            properties: { confirm: { type: 'boolean' } },
-            required: ['confirm'],
-          },
-        }),
-      },
-    });
-  const accepted = acceptedContent<{ confirm: boolean }>(
-    context.mcpReq?.inputResponses,
-    'confirm',
-  );
-  return accepted?.confirm === true
-    ? result(await operation())
-    : result({ applied: false, reason: 'The developer did not confirm.' });
 }
 
 const readOnly = {

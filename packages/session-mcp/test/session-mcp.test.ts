@@ -66,6 +66,25 @@ describe('session MCP surface', () => {
     expect(selectDelivery).toHaveBeenCalledWith('delivery-one');
   });
 
+  it('routes repository initialization after host confirmation', async () => {
+    const initializeRepository = vi.fn().mockReturnValue({ initialized: true });
+    await connect(executors({ initializeRepository }));
+    const configuration = {
+      lifecycle: 'pre-production',
+      developmentMode: 'react-storybook',
+      verificationCommands: ['pnpm test'],
+      additionalGuidance: '',
+    } as const;
+
+    const response = await required(client).callTool({
+      name: 'initialize_repository',
+      arguments: configuration,
+    });
+
+    expect(initializeRepository).toHaveBeenCalledWith(configuration);
+    expect(response.structuredContent).toEqual({ initialized: true });
+  });
+
   it('routes bounded context without rebuilding it in the adapter', async () => {
     const readiness = vi.fn().mockReturnValue({ ready: [] });
     await connect(executors({ readiness }));
@@ -139,7 +158,8 @@ function executors(
     repositoryStatus:
       overrides.repositoryStatus ??
       vi.fn().mockReturnValue({ initialized: true }),
-    initializeRepository: vi.fn().mockReturnValue({}),
+    initializeRepository:
+      overrides.initializeRepository ?? vi.fn().mockReturnValue({}),
     configureRepository: vi.fn().mockReturnValue({}),
     withProjections: (
       operation: (value: typeof projections, id: string) => unknown,
