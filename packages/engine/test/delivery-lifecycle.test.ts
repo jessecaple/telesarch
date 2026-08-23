@@ -140,6 +140,49 @@ describe('delivery lifecycle', () => {
     ).toMatchObject({ kind: 'run-implementation', mode: 'initial' });
   });
 
+  it('does not carry manual tests across an applied delivery revision', () => {
+    const fixture = createFixture();
+    fixture.complete('run-decomposition', { status: 'leaf' });
+    fixture.complete('run-implementation', {
+      status: 'completed',
+      manualTests: ['Inspect the visual result.'],
+    });
+    fixture.complete('run-verification', { status: 'passed' });
+    fixture.complete('run-leaf-review', { status: 'accepted' });
+    expect(
+      fixture.complete('request-manual-test', {
+        status: 'failed',
+        observations: ['Remove the visible tagline.'],
+      }),
+    ).toMatchObject({
+      kind: 'run-delivery-revision',
+      trigger: { kind: 'manual-test-failure' },
+    });
+
+    const delivery = readDelivery(fixture.authority, 'delivery');
+    if (delivery === undefined) throw new Error('Delivery is missing.');
+    fixture.complete('run-delivery-revision', {
+      status: 'applied',
+      graph: {
+        ...delivery.graph,
+        nodes: delivery.graph.nodes.map((node) => ({
+          ...node,
+          state: 'running' as const,
+          completionCriteria: [
+            ...node.completionCriteria,
+            'The tagline is not rendered.',
+          ],
+        })),
+      },
+    });
+    fixture.complete('run-implementation', { status: 'completed' });
+    fixture.complete('run-verification', { status: 'passed' });
+
+    expect(
+      fixture.complete('run-leaf-review', { status: 'accepted' }),
+    ).toMatchObject({ kind: 'integration-ready' });
+  });
+
   it('continues independent work while one delivery cone waits for the user', () => {
     const fixture = createFixture();
     fixture.decomposeChildren([
