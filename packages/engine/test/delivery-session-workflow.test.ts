@@ -97,6 +97,12 @@ describe('delivery session workflow', () => {
     });
     const firstAssignment = requireAssignment(decomposition);
     expect(firstAssignment.resume).toBe(false);
+    expect(firstAssignment.instructions.join('\n')).toContain(
+      'Do not split one outcome into cases, individual controls, styling states, tests, or presentation fragments.',
+    );
+    expect(firstAssignment.instructions.join('\n')).toContain(
+      'it is not a search for the smallest possible fragment.',
+    );
     const restartedSession = new DeliverySessionWorkflow(
       repository,
       contractsRoot,
