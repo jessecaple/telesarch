@@ -1,8 +1,4 @@
-import {
-  acceptedContent,
-  inputRequired,
-  McpServer,
-} from '@modelcontextprotocol/server';
+import { McpServer } from '@modelcontextprotocol/server';
 import { z } from 'zod/v4';
 
 import type { RepositorySessionExecutors } from './session-tool-executors.js';
@@ -14,6 +10,11 @@ const configuration = z.object({
   verificationCommands: strings,
   additionalGuidance: z.string(),
 });
+const confirmation = {
+  confirmed: z
+    .literal(true)
+    .describe('Set only after the developer explicitly confirms this action.'),
+};
 const bounded = {
   offset: z.number().int().min(0).optional(),
   limit: z.number().int().min(1).max(200).optional(),
@@ -65,12 +66,12 @@ export function createSessionMcp(
     {
       description:
         'Initialize Telesarch after the developer explicitly confirms every reported setup choice.',
-      inputSchema: configuration,
+      inputSchema: configuration.extend(confirmation),
     },
-    async (params, context) =>
-      confirmed(context, 'Initialize Telesarch in this repository?', () =>
-        executors.initializeRepository(params),
-      ),
+    async ({ confirmed, ...params }) => {
+      void confirmed;
+      return result(executors.initializeRepository(params));
+    },
   );
 
   server.registerTool(
@@ -78,12 +79,12 @@ export function createSessionMcp(
     {
       description:
         'Replace the repository workflow configuration after discussing the changed choices with the developer.',
-      inputSchema: configuration,
+      inputSchema: configuration.extend(confirmation),
     },
-    async (params, context) =>
-      confirmed(context, 'Apply this repository configuration?', () =>
-        executors.configureRepository(params),
-      ),
+    async ({ confirmed, ...params }) => {
+      void confirmed;
+      return result(executors.configureRepository(params));
+    },
   );
 
   server.registerTool(
@@ -131,12 +132,13 @@ export function createSessionMcp(
         completionCriteria: strings,
         notInScope: strings,
         designHorizon: strings,
+        ...confirmation,
       }),
     },
-    async (params, context) =>
-      confirmed(context, `Begin delivery “${params.title}”?`, async () =>
-        executors.workflow.beginDelivery(params),
-      ),
+    async ({ confirmed, ...params }) => {
+      void confirmed;
+      return result(await executors.workflow.beginDelivery(params));
+    },
   );
 
   server.registerTool(
@@ -224,38 +226,27 @@ export function createSessionMcp(
     {
       description:
         'Permit one explicit retry after a failed pull-request attempt.',
-      inputSchema: z.object({}),
+      inputSchema: z.object(confirmation),
     },
-    async (_, context) =>
-      confirmed(context, 'Retry the pull-request handoff?', () =>
-        executors.workflow.permitPullRequestRetry(),
-      ),
+    async () => result(executors.workflow.permitPullRequestRetry()),
   );
   server.registerTool(
     'confirm_integrated',
     {
       description:
         'Remove delivery resources after the developer confirms integration.',
-      inputSchema: z.object({}),
+      inputSchema: z.object(confirmation),
     },
-    async (_, context) =>
-      confirmed(
-        context,
-        'Confirm this delivery is integrated and clean it up?',
-        () => executors.workflow.confirmIntegrated(),
-      ),
+    async () => result(await executors.workflow.confirmIntegrated()),
   );
   server.registerTool(
     'abandon_delivery',
     {
       description:
         'Abandon the selected delivery while preserving recoverable Git work.',
-      inputSchema: z.object({}),
+      inputSchema: z.object(confirmation),
     },
-    async (_, context) =>
-      confirmed(context, 'Abandon this delivery?', () =>
-        executors.workflow.abandon(),
-      ),
+    async () => result(await executors.workflow.abandon()),
   );
   return server;
 }
@@ -351,34 +342,6 @@ function registerContextTools(
     async ({ view, ...params }) =>
       result(executors.sourceContext(view, params)),
   );
-}
-
-async function confirmed<T>(
-  context: { mcpReq?: { inputResponses?: Readonly<Record<string, unknown>> } },
-  message: string,
-  operation: () => T | Promise<T>,
-) {
-  const raw = context.mcpReq?.inputResponses?.confirm;
-  if (raw === undefined)
-    return inputRequired({
-      inputRequests: {
-        confirm: inputRequired.elicit({
-          message,
-          requestedSchema: {
-            type: 'object',
-            properties: { confirm: { type: 'boolean' } },
-            required: ['confirm'],
-          },
-        }),
-      },
-    });
-  const accepted = acceptedContent<{ confirm: boolean }>(
-    context.mcpReq?.inputResponses,
-    'confirm',
-  );
-  return accepted?.confirm === true
-    ? result(await operation())
-    : result({ applied: false, reason: 'The developer did not confirm.' });
 }
 
 const readOnly = {
