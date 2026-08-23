@@ -1,0 +1,29 @@
+{
+  "name": "@telesarch/sqlite",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc --project tsconfig.lib.json",
+    "lint": "eslint src test",
+    "test": "vitest run",
+    "typecheck": "tsc --project tsconfig.lib.json --noEmit"
+  },
+  "nx": {
+    "tags": [
+      "type:domain"
+    ]
+  },
+  "dependencies": {
+    "better-sqlite3": "catalog:"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "9.6.0"
+  }
+}

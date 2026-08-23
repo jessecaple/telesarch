@@ -1,0 +1,15 @@
+packages:
+  - apps/*
+  - packages/*
+
+autoInstallPeers: true
+disallowWorkspaceCycles: true
+enableGlobalVirtualStore: false
+verifyDepsBeforeRun: error
+allowBuilds:
+  better-sqlite3: true
+  esbuild: true
+  msw: false
+  nx: true
+catalog:
+  better-sqlite3: 13.0.3

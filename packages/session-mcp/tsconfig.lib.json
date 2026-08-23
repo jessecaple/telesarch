@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "../../dist/packages/session-mcp",
+    "rootDir": "src",
+    "tsBuildInfoFile": "../../dist/packages/session-mcp/tsconfig.lib.tsbuildinfo"
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["test/**/*.ts"]
+}

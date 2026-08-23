@@ -1,0 +1,37 @@
+{
+  "name": "@telesarch/source",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "packageManager": "pnpm@11.15.1",
+  "engines": {
+    "node": ">=24.18.0 <25",
+    "pnpm": "11.15.1"
+  },
+  "scripts": {
+    "build": "nx affected -t build --outputStyle=static",
+    "format": "nx format:write --base=HEAD",
+    "format:check": "prettier --check .",
+    "lint": "nx affected -t lint --outputStyle=static",
+    "telesarch": "tsx apps/cli/src/cli.ts",
+    "test": "nx affected -t test --outputStyle=static",
+    "typecheck": "nx run-many -t typecheck --outputStyle=static",
+    "workspace:sync": "nx sync",
+    "workspace:sync:check": "nx sync:check"
+  },
+  "devDependencies": {
+    "@nx/eslint-plugin": "23.1.1",
+    "@nx/js": "23.1.1",
+    "@types/node": "^24.13.3",
+    "@typescript/native": "npm:typescript@^7.0.2",
+    "eslint": "9.39.5",
+    "eslint-config-prettier": "10.1.8",
+    "nx": "23.1.1",
+    "prettier": "~3.6.2",
+    "tslib": "^2.3.0",
+    "tsx": "4.23.1",
+    "typescript": "npm:@typescript/typescript6@~6.0.2",
+    "typescript-eslint": "8.65.0",
+    "vitest": "4.1.10"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "../../dist/packages/sqlite",
+    "rootDir": ".",
+    "tsBuildInfoFile": "../../dist/packages/sqlite/tsconfig.lib.tsbuildinfo"
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["test/**/*.ts"]
+}

@@ -1,0 +1,75 @@
+# Dependencies and package-manager state
+node_modules/
+.pnpm-store/
+.npm/
+.pnp.*
+
+# Nx state
+.nx/cache/
+.nx/workspace-data/
+.nx/migrate-runs/
+.nx/installation/
+
+# Compiled output and TypeScript state
+dist/
+storybook-static/
+tmp/
+out-tsc/
+*.tsbuildinfo
+
+# Test output
+coverage/
+.nyc_output/
+
+# Environment files and local secrets
+.env
+.env.*
+!.env.example
+!.env.*.example
+.direnv/
+*.key
+*.pem
+
+# Logs and process state
+logs/
+*.log
+*.pid
+*.pid.lock
+
+# Tool caches
+.cache/
+.eslintcache
+.prettiercache
+
+# IDEs and editors
+.idea/
+.fleet/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/settings.json
+!.vscode/tasks.json
+*.swp
+*.swo
+*~
+
+# Agent state and linked worktrees
+.claude/settings.json
+.claude/settings.local.json
+.codex/config.toml
+.codex/instructions.md
+.worktrees/
+
+# Operating-system files
+.DS_Store
+Desktop.ini
+Thumbs.db
+
+# Temporary files
+*.bak
+*.orig
+*.rej
+*.tmp
+
+.vitest-attachments/
+__screenshots__/
