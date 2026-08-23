@@ -20,6 +20,7 @@ export interface HostInstallationArtifact {
 }
 
 export type SessionHost = 'claude' | 'codex';
+export type HostCliCommand = readonly [string, ...string[]];
 
 /**
  * Produces the fixed, project-neutral files installed once for a session host.
@@ -27,8 +28,9 @@ export type SessionHost = 'claude' | 'codex';
  */
 export function hostInstallationArtifacts(
   host: SessionHost,
+  cliCommand: HostCliCommand,
 ): readonly HostInstallationArtifact[] {
-  return host === 'claude' ? claudeArtifacts() : codexArtifacts();
+  return host === 'claude' ? claudeArtifacts() : codexArtifacts(cliCommand);
 }
 
 const claudeTierModels = { standard: 'sonnet', elevated: 'opus' } as const;
@@ -57,7 +59,9 @@ function claudeArtifacts(): readonly HostInstallationArtifact[] {
   ];
 }
 
-function codexArtifacts(): readonly HostInstallationArtifact[] {
+function codexArtifacts(
+  cliCommand: HostCliCommand,
+): readonly HostInstallationArtifact[] {
   return [
     ...runtimeRoles.map((role) => ({
       relativePath: `agents/telesarch-${role}.toml`,
@@ -71,19 +75,33 @@ function codexArtifacts(): readonly HostInstallationArtifact[] {
         'project_doc_max_bytes = 0',
         '',
         '[mcp_servers.telesarch]',
+        ...codexMcpTransport(cliCommand, 'session'),
         'enabled = false',
         '',
         '[mcp_servers.telesarch-role]',
+        ...codexMcpTransport(cliCommand, 'role'),
         'enabled = true',
         `enabled_tools = ${tomlArray(hostServableTools(role))}`,
         '',
         '[mcp_servers.telesarch-storybook]',
+        ...codexMcpTransport(cliCommand, 'storybook'),
         `enabled = ${role === 'storybook-composition' ? 'true' : 'false'}`,
         `enabled_tools = ${tomlArray(storybookTools(role))}`,
         '',
       ].join('\n'),
     })),
     skillArtifact(),
+  ];
+}
+
+function codexMcpTransport(
+  cliCommand: HostCliCommand,
+  surface: 'session' | 'role' | 'storybook',
+): readonly string[] {
+  const [command, ...arguments_] = cliCommand;
+  return [
+    `command = ${tomlString(command)}`,
+    `args = ${tomlArray([...arguments_, 'mcp', surface])}`,
   ];
 }
 

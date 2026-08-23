@@ -33,7 +33,7 @@ export async function installHostIntegration(
     throw new Error('The standalone CLI command is missing.');
   }
   const root = join(options.homeDirectory ?? homedir(), `.${host}`);
-  const artifacts = hostInstallationArtifacts(host);
+  const artifacts = hostInstallationArtifacts(host, cli);
   for (const artifact of artifacts) {
     const path = join(root, artifact.relativePath);
     await mkdir(dirname(path), { recursive: true, mode: 0o700 });

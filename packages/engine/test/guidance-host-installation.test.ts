@@ -2,11 +2,20 @@ import { describe, expect, it } from 'vitest';
 
 import { hostInstallationArtifacts, type SessionHost } from '../src/index.js';
 
+const cliCommand = [
+  'npm',
+  'exec',
+  '--yes',
+  '--package=telesarch@0.1.0',
+  '--',
+  'telesarch',
+] as const;
+
 describe('session host installation', () => {
   it.each<SessionHost>(['codex', 'claude'])(
     'installs project-neutral %s roles and entry skill',
     (host) => {
-      const artifacts = hostInstallationArtifacts(host);
+      const artifacts = hostInstallationArtifacts(host, cliCommand);
       const paths = artifacts.map((artifact) => artifact.relativePath);
 
       expect(paths).toContain('skills/telesarch-workflow/SKILL.md');
@@ -32,11 +41,11 @@ describe('session host installation', () => {
   );
 
   it('gives role agents only the role MCP and fixed host restrictions', () => {
-    const implementation = hostInstallationArtifacts('codex').find(
+    const implementation = hostInstallationArtifacts('codex', cliCommand).find(
       (artifact) =>
         artifact.relativePath === 'agents/telesarch-implementation.toml',
     );
-    const decomposition = hostInstallationArtifacts('codex').find(
+    const decomposition = hostInstallationArtifacts('codex', cliCommand).find(
       (artifact) =>
         artifact.relativePath === 'agents/telesarch-decomposition.toml',
     );
@@ -47,24 +56,34 @@ describe('session host installation', () => {
     expect(implementation?.content).toContain('project_doc_max_bytes = 0');
     expect(decomposition?.content).toContain('sandbox_mode = "read-only"');
     expect(decomposition?.content).toContain('[mcp_servers.telesarch-role]');
+    expect(decomposition?.content).toContain('command = "npm"');
+    expect(decomposition?.content).toContain(
+      'args = ["exec", "--yes", "--package=telesarch@0.1.0", "--", "telesarch", "mcp", "role"]',
+    );
     expect(decomposition?.content).toContain('source_context');
     expect(decomposition?.content).toContain('delivery_revision_impact');
     expect(decomposition?.content).toContain(
       'Do not use the telesarch-workflow skill',
     );
     expect(decomposition?.content).toContain(
-      '[mcp_servers.telesarch-storybook]\nenabled = false',
+      '[mcp_servers.telesarch-storybook]',
     );
-    const storybook = hostInstallationArtifacts('codex').find(
+    expect(decomposition?.content).toContain(
+      'args = ["exec", "--yes", "--package=telesarch@0.1.0", "--", "telesarch", "mcp", "storybook"]\nenabled = false',
+    );
+    const storybook = hostInstallationArtifacts('codex', cliCommand).find(
       (artifact) =>
         artifact.relativePath === 'agents/telesarch-storybook-composition.toml',
     );
     expect(storybook?.content).toContain(
-      '[mcp_servers.telesarch-storybook]\nenabled = true',
+      'args = ["exec", "--yes", "--package=telesarch@0.1.0", "--", "telesarch", "mcp", "storybook"]\nenabled = true',
     );
     expect(storybook?.content).toContain('preview_stories');
 
-    const claudeStorybook = hostInstallationArtifacts('claude').find(
+    const claudeStorybook = hostInstallationArtifacts(
+      'claude',
+      cliCommand,
+    ).find(
       (artifact) =>
         artifact.relativePath === 'agents/telesarch-storybook-composition.md',
     );
