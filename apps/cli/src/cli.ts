@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-import { fileURLToPath, pathToFileURL } from 'node:url';
+import { realpathSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 
 import {
   DeliverySessionWorkflow,
@@ -7,6 +8,7 @@ import {
   inspectRepositorySetup,
 } from '@telesarch/engine';
 
+import { defaultAgentContractsRoot } from './agent-contracts-root.js';
 import { parseArguments } from './cli-arguments.js';
 import { currentCliLaunchCommand } from './cli-launch-command.js';
 import { runMcpCommand } from './cli-mcp.js';
@@ -14,9 +16,13 @@ import { installHostIntegration } from './host-installation.js';
 
 if (
   process.argv[1] !== undefined &&
-  import.meta.url === pathToFileURL(process.argv[1]).href
+  isCliEntry(import.meta.url, process.argv[1])
 ) {
   process.exitCode = await runCli(process.argv.slice(2));
+}
+
+export function isCliEntry(moduleUrl: string, entryPath: string): boolean {
+  return realpathSync(fileURLToPath(moduleUrl)) === realpathSync(entryPath);
 }
 
 export interface CliRuntimeOptions {
@@ -67,7 +73,7 @@ function repositoryStatus(worktree: string, contractsRoot?: string): unknown {
   if (!setup.initialized) return setup;
   const workflow = new DeliverySessionWorkflow(
     worktree,
-    contractsRoot ?? defaultContractsRoot(),
+    contractsRoot ?? defaultAgentContractsRoot(),
   );
   return {
     ...setup,
@@ -79,12 +85,6 @@ function repositoryStatus(worktree: string, contractsRoot?: string): unknown {
       worktree: delivery.worktreePath,
     })),
   };
-}
-
-function defaultContractsRoot(): string {
-  return fileURLToPath(
-    new URL('../../../packages/agent-contracts/', import.meta.url),
-  );
 }
 
 function print(value: unknown): void {

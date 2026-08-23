@@ -35,4 +35,22 @@ describe('standalone CLI launch command', () => {
       }),
     ).toThrow('The standalone CLI entry point is unavailable.');
   });
+
+  it('registers the exact public package version when run through npm', () => {
+    expect(
+      currentCliLaunchCommand({
+        executablePath: '/tmp/npm/node',
+        executableArguments: [],
+        entryPath: '/tmp/npm/telesarch.js',
+        packageVersion: '0.1.0',
+      }),
+    ).toEqual([
+      'npm',
+      'exec',
+      '--yes',
+      '--package=telesarch@0.1.0',
+      '--',
+      'telesarch',
+    ]);
+  });
 });

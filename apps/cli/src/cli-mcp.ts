@@ -1,5 +1,3 @@
-import { fileURLToPath } from 'node:url';
-
 import type { McpServer } from '@modelcontextprotocol/server';
 import {
   serveStdio,
@@ -11,6 +9,8 @@ import {
   RepositorySessionExecutors,
 } from '@telesarch/session-mcp';
 import { RepositoryStorybookMcp } from '@telesarch/storybook';
+
+import { defaultAgentContractsRoot } from './agent-contracts-root.js';
 
 /** Serves one direct repository-local MCP surface over stdio. */
 export async function runMcpCommand(
@@ -40,10 +40,4 @@ export async function runMcpCommand(
   } finally {
     await storybook?.close();
   }
-}
-
-function defaultAgentContractsRoot(): string {
-  return fileURLToPath(
-    new URL('../../../packages/agent-contracts', import.meta.url),
-  );
 }

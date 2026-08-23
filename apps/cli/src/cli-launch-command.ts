@@ -2,7 +2,10 @@ export interface CliProcessInvocation {
   readonly executablePath: string;
   readonly executableArguments: readonly string[];
   readonly entryPath?: string;
+  readonly packageVersion?: string;
 }
+
+declare const TELESARCH_PACKAGE_VERSION: string | undefined;
 
 /** The exact standalone CLI invocation that remains valid without PATH. */
 export function currentCliLaunchCommand(
@@ -10,8 +13,22 @@ export function currentCliLaunchCommand(
     executablePath: process.execPath,
     executableArguments: process.execArgv,
     entryPath: process.argv[1],
+    packageVersion:
+      typeof TELESARCH_PACKAGE_VERSION === 'string'
+        ? TELESARCH_PACKAGE_VERSION
+        : undefined,
   },
 ): readonly [string, ...string[]] {
+  if (invocation.packageVersion !== undefined) {
+    return [
+      'npm',
+      'exec',
+      '--yes',
+      `--package=telesarch@${invocation.packageVersion}`,
+      '--',
+      'telesarch',
+    ];
+  }
   if (invocation.executablePath.trim() === '') {
     throw new Error('The CLI runtime path is unavailable.');
   }
