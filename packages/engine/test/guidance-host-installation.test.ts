@@ -31,6 +31,10 @@ describe('session host installation', () => {
       );
       expect(skill?.content).toContain('Never substitute the delivery ID.');
       expect(skill?.content).toContain('`fork_turns: "none"` in Codex');
+      expect(skill?.content).toContain(
+        'wait once with the longest supported timeout',
+      );
+      expect(skill?.content).toContain('Do not poll the role');
       expect(
         paths.some((path) => path.includes('telesarch-decomposition')),
       ).toBe(true);
