@@ -4,7 +4,7 @@ import {
   openRepositoryAuthority,
   readActiveDeliveries,
   readDelivery,
-  readOpenDeliveryActions,
+  readDeliveryActions,
   type DeliveryRecord,
   type RepositoryAuthorityDatabase,
 } from '@telesarch/repository-authority';
@@ -15,6 +15,7 @@ import {
 import { StorybookProcessManager } from '@telesarch/storybook';
 
 import { DeliveryGitHandoff } from './delivery-git-handoff.js';
+import { openActionsAfterLatestAppliedRevision } from './delivery-action-scope.js';
 import type {
   AcceptedDeliveryIntent,
   DeliveryCleanupResult,
@@ -250,9 +251,8 @@ export class DeliverySessionWorkflow {
   private completeWaiting(kind: string, result: unknown): DeliverySessionState {
     return this.withAuthority(({ database }) => {
       const delivery = this.requireSelected(database);
-      const actions = readOpenDeliveryActions(
-        database,
-        delivery.deliveryId,
+      const actions = openActionsAfterLatestAppliedRevision(
+        readDeliveryActions(database, delivery.deliveryId),
       ).filter((action) => action.kind === kind && action.status === 'waiting');
       if (actions.length !== 1) {
         throw new DeliveryLifecycleError(

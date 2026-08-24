@@ -1,6 +1,6 @@
 import {
   readDelivery,
-  readOpenDeliveryActions,
+  readDeliveryActions,
   validateDeliveryGraph,
   type DeliveryGraph,
   type DeliveryNodeContract,
@@ -9,6 +9,7 @@ import {
   type RepositoryAuthorityDatabase,
 } from '@telesarch/repository-authority';
 
+import { openActionsAfterLatestAppliedRevision } from './delivery-action-scope.js';
 import { DeliveryLifecycleError } from './delivery-lifecycle-error.js';
 import {
   blockingDependencies,
@@ -48,7 +49,9 @@ export class DeliveryGraphProjections {
       completed: 0,
     };
     for (const node of delivery.graph.nodes) states[node.state] += 1;
-    const openActions = readOpenDeliveryActions(this.authority, deliveryId);
+    const openActions = openActionsAfterLatestAppliedRevision(
+      readDeliveryActions(this.authority, deliveryId),
+    );
     const openAction =
       openActions.find(
         (action) => action.status === 'pending' || action.status === 'running',

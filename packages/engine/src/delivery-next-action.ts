@@ -34,14 +34,15 @@ export function deriveDeliveryNextAction(
   if (delivery.status === 'integration-ready') {
     return { kind: 'integration-ready', delivery };
   }
-  const waiting = actions.filter(
+  const currentActions = actionsAfterLatestAppliedRevision(actions);
+  const waiting = currentActions.filter(
     (action) =>
       ((action.kind === 'manual-test' || action.kind === 'user-decision') &&
         action.status === 'waiting') ||
       ((action.kind === 'manual-test' || action.kind === 'user-decision') &&
         (action.status === 'pending' || action.status === 'running')),
   );
-  const running = actions.find(
+  const running = currentActions.find(
     (action) =>
       (action.status === 'pending' || action.status === 'running') &&
       action.kind !== 'manual-test' &&
@@ -49,7 +50,7 @@ export function deriveDeliveryNextAction(
   );
   if (running !== undefined)
     return { kind: 'continue-action', action: running };
-  const queuedRevision = actions.find(
+  const queuedRevision = currentActions.find(
     (action) =>
       action.kind === 'delivery-revision' && action.status === 'waiting',
   );
@@ -66,8 +67,6 @@ export function deriveDeliveryNextAction(
   ) {
     return revision;
   }
-  const currentActions = actionsAfterLatestAppliedRevision(actions);
-
   const ordered = orderedDeliveryNodes(delivery);
   const pending = ordered.find(
     (node) => node.kind === 'pending' && !blockedNodeIds.has(node.nodeId),
