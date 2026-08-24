@@ -17,3 +17,11 @@ export function actionsAfterLatestAppliedRevision(
     ? actions
     : actions.filter((action) => action.sequence > applied.sequence);
 }
+
+export function openActionsAfterLatestAppliedRevision(
+  actions: readonly DeliveryActionRecord[],
+): readonly DeliveryActionRecord[] {
+  return actionsAfterLatestAppliedRevision(actions).filter((action) =>
+    ['pending', 'running', 'waiting'].includes(action.status),
+  );
+}

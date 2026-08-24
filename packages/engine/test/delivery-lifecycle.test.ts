@@ -183,6 +183,63 @@ describe('delivery lifecycle', () => {
     ).toMatchObject({ kind: 'integration-ready' });
   });
 
+  it('does not let pending user work block an applied delivery revision', () => {
+    const fixture = createFixture();
+    fixture.complete('run-decomposition', { status: 'leaf' });
+    fixture.complete('run-implementation', {
+      status: 'completed',
+      manualTests: ['Inspect the visual result.'],
+    });
+    fixture.complete('run-verification', { status: 'passed' });
+    fixture.complete('run-leaf-review', { status: 'accepted' });
+    const manualTest = fixture.lifecycle.startNextAction({
+      deliveryId: 'delivery',
+      actionId: 'pending-manual-test',
+      occurredAtMs: fixture.occurredAtMs(),
+    });
+    expect(manualTest.action.status).toBe('waiting');
+
+    const revision = fixture.lifecycle.requestRevision({
+      deliveryId: 'delivery',
+      nodeId: fixture.nodeId('root'),
+      actionId: 'changed-visual-intent',
+      trigger: {
+        kind: 'changed-intent',
+        summary: 'Remove the visible tagline.',
+      },
+      occurredAtMs: fixture.occurredAtMs(),
+    });
+    fixture.lifecycle.markActionRunning(
+      revision.action.actionId,
+      fixture.occurredAtMs(),
+    );
+    const delivery = readDelivery(fixture.authority, 'delivery');
+    if (delivery === undefined) throw new Error('Delivery is missing.');
+    fixture.lifecycle.completeAction({
+      actionId: revision.action.actionId,
+      result: {
+        status: 'applied',
+        graph: {
+          ...delivery.graph,
+          nodes: delivery.graph.nodes.map((node) => ({
+            ...node,
+            state: 'running' as const,
+            completionCriteria: [
+              ...node.completionCriteria,
+              'The tagline is not rendered.',
+            ],
+          })),
+        },
+      },
+      occurredAtMs: fixture.occurredAtMs(),
+    });
+
+    expect(fixture.next()).toMatchObject({
+      kind: 'run-implementation',
+      node: { nodeId: fixture.nodeId('root') },
+    });
+  });
+
   it('continues independent work while one delivery cone waits for the user', () => {
     const fixture = createFixture();
     fixture.decomposeChildren([

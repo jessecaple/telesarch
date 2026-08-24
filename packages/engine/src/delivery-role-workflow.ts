@@ -3,8 +3,8 @@ import { randomUUID } from 'node:crypto';
 import {
   openRepositoryAuthority,
   readDelivery,
+  readDeliveryActions,
   readDeliveryByNode,
-  readOpenDeliveryActions,
   updateDeliveryAction,
   type DeliveryActionRecord,
 } from '@telesarch/repository-authority';
@@ -21,6 +21,7 @@ import {
   resultSchemaPath,
   type DeliveryRoleAssignment,
 } from './delivery-role-assignment.js';
+import { openActionsAfterLatestAppliedRevision } from './delivery-action-scope.js';
 import { DeliveryLifecycle } from './delivery-lifecycle.js';
 import { DeliveryLifecycleError } from './delivery-lifecycle-error.js';
 import { DeliveryVerifier } from './delivery-verifier.js';
@@ -136,9 +137,11 @@ export class DeliveryRoleWorkflow {
       const currentAction =
         mistakenDelivery === undefined
           ? undefined
-          : readOpenDeliveryActions(
-              authority.database,
-              mistakenDelivery.deliveryId,
+          : openActionsAfterLatestAppliedRevision(
+              readDeliveryActions(
+                authority.database,
+                mistakenDelivery.deliveryId,
+              ),
             ).find(
               (action) => action.nodeId !== undefined && roleAction(action),
             );
@@ -149,9 +152,8 @@ export class DeliveryRoleWorkflow {
           : `The supplied value is the delivery ID. Retry with the complete current node ID: ${currentAction.nodeId}`,
       );
     }
-    const actions = readOpenDeliveryActions(
-      authority.database,
-      delivery.deliveryId,
+    const actions = openActionsAfterLatestAppliedRevision(
+      readDeliveryActions(authority.database, delivery.deliveryId),
     ).filter((action) => action.nodeId === nodeId && roleAction(action));
     if (actions.length !== 1) {
       throw new AgentResultRejectionError(
