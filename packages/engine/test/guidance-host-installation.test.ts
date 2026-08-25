@@ -40,6 +40,12 @@ describe('session host installation', () => {
       expect(skill?.content).toContain(
         'Call `next_action` only after that role returns `FINAL_ANSWER`',
       );
+      expect(skill?.content).toContain(
+        'Do not expose schema field names. Omit routine verification details',
+      );
+      expect(skill?.content).toContain(
+        'Reply `approve` to begin, or tell me what to change.',
+      );
       expect(
         paths.some((path) => path.includes('telesarch-decomposition')),
       ).toBe(true);
