@@ -9,6 +9,9 @@ import {
   type DeliveryActionRecord,
 } from '@telesarch/repository-authority';
 import {
+  changedPaths,
+  changedPathsBetween,
+  commitAll,
   listRepositoryWorktrees,
   repositoryCheckoutFacts,
 } from '@telesarch/git';
@@ -96,6 +99,8 @@ export class DeliveryRoleWorkflow {
             occurredAtMs: Date.now(),
           });
         }
+      } else if (action.kind === 'visual-adjustment') {
+        await this.completeVisualAdjustment(authority, action, nodeId, result);
       } else {
         new DeliveryLifecycle(authority.database).completeAction({
           actionId: action.actionId,
@@ -107,6 +112,70 @@ export class DeliveryRoleWorkflow {
     } finally {
       authority.database.close();
     }
+  }
+
+  private async completeVisualAdjustment(
+    authority: ReturnType<typeof openRepositoryAuthority>,
+    action: DeliveryActionRecord,
+    nodeId: string,
+    result: unknown,
+  ): Promise<void> {
+    const delivery = readDelivery(authority.database, action.deliveryId);
+    if (delivery === undefined) {
+      throw new DeliveryLifecycleError('Delivery missing.');
+    }
+    const outcome = object(result);
+    if (outcome.status === 'preview-ready') {
+      if (changedPaths(delivery.worktreePath).length === 0) {
+        throw new DeliveryLifecycleError(
+          'A visual adjustment must change the delivery source.',
+        );
+      }
+      const baseCommit = inputString(action.input, 'baseCommit');
+      if (baseCommit === undefined) {
+        throw new DeliveryLifecycleError(
+          'The visual adjustment has no starting commit.',
+        );
+      }
+      const title =
+        delivery.graph.nodes.find((node) => node.nodeId === nodeId)?.title ??
+        nodeId;
+      const commit = await commitAll(delivery.worktreePath, `Adjust ${title}`);
+      new DeliveryLifecycle(authority.database).completeAction({
+        actionId: action.actionId,
+        result: {
+          status: 'preview-ready',
+          commit,
+          changedPaths: changedPathsBetween(
+            delivery.worktreePath,
+            baseCommit,
+            commit,
+          ),
+        },
+        occurredAtMs: Date.now(),
+      });
+      return;
+    }
+    if (changedPaths(delivery.worktreePath).length > 0) {
+      throw new DeliveryLifecycleError(
+        'A revision-required visual adjustment must not edit files.',
+      );
+    }
+    new DeliveryLifecycle(authority.database).completeAction({
+      actionId: action.actionId,
+      result: result as never,
+      occurredAtMs: Date.now(),
+    });
+    new DeliveryLifecycle(authority.database).requestRevision({
+      deliveryId: action.deliveryId,
+      nodeId,
+      actionId: randomUUID(),
+      trigger: {
+        kind: 'discovered-requirement',
+        summary: String(outcome.reason),
+      },
+      occurredAtMs: Date.now(),
+    });
   }
 
   private withAction<T>(
@@ -182,6 +251,8 @@ function roleAction(action: DeliveryActionRecord): boolean {
     'leaf-review',
     'integration-review',
     'storybook-composition',
+    'visual-adjustment',
+    'visual-adjustment-review',
   ].includes(action.kind);
 }
 
@@ -189,4 +260,9 @@ function object(value: unknown): Record<string, unknown> {
   return value !== null && typeof value === 'object' && !Array.isArray(value)
     ? (value as Record<string, unknown>)
     : {};
+}
+
+function inputString(value: unknown, key: string): string | undefined {
+  const field = object(value)[key];
+  return typeof field === 'string' ? field : undefined;
 }

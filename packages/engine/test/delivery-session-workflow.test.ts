@@ -198,17 +198,15 @@ describe('delivery session workflow', () => {
 
     await expect(session.nextAction()).resolves.toMatchObject({
       state: 'Needs your input',
-      message: expect.stringContaining('Please review:'),
+      message: 'Please review the completed interface.',
       action: {
+        kind: 'visual-review',
         input: {
-          visualReview: true,
           sourceActionIds: [expect.any(String)],
         },
       },
     });
-    expect(
-      session.submitManualTest({ passed: true, observations: [] }),
-    ).toMatchObject({
+    expect(session.approveVisualReview()).toMatchObject({
       state: 'Complete',
       message: 'The delivery is ready for handoff.',
     });

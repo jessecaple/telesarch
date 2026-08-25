@@ -13,6 +13,8 @@ import {
   reviewResult,
   userDecisionResult,
   verificationResult,
+  visualAdjustmentResult,
+  visualReviewResult,
 } from './delivery-action-results.js';
 import { actionsAfterLatestAppliedRevision } from './delivery-action-scope.js';
 import { DeliveryLifecycleError } from './delivery-lifecycle-error.js';
@@ -29,8 +31,11 @@ export function completedActionGraph(
   action: DeliveryActionRecord,
   result: DeliveryActionResult,
 ): DeliveryGraph {
-  const recorded = { ...action, result };
+  const recorded = { ...action, status: 'completed' as const, result };
   const currentActions = actionsAfterLatestAppliedRevision(actions);
+  const recordedActions = currentActions.map((candidate) =>
+    candidate.actionId === action.actionId ? recorded : candidate,
+  );
   switch (action.kind) {
     case 'decomposition':
       return applyDecomposition(
@@ -81,6 +86,45 @@ export function completedActionGraph(
         accepted ? (reviewPending ? 'waiting' : 'completed') : 'waiting',
       );
     }
+    case 'visual-review': {
+      const outcome = visualReviewResult(recorded);
+      if (outcome.status === 'superseded') {
+        return updateSubjectState(delivery, action, 'running');
+      }
+      const hasAdjustments = recordedActions.some(
+        (candidate) =>
+          candidate.kind === 'visual-adjustment' &&
+          candidate.status === 'completed' &&
+          inputId(candidate, 'visualReviewActionId') === action.actionId,
+      );
+      const reviewPending =
+        pendingDeliveryReview(
+          delivery,
+          recordedActions,
+          subject(delivery, action).nodeId,
+        ) !== undefined;
+      return updateSubjectState(
+        delivery,
+        action,
+        hasAdjustments ? 'running' : reviewPending ? 'waiting' : 'completed',
+      );
+    }
+    case 'visual-adjustment':
+      visualAdjustmentResult(recorded);
+      return delivery.graph;
+    case 'visual-adjustment-review': {
+      const accepted = reviewResult(recorded).status === 'accepted';
+      const reviewPending =
+        accepted && action.nodeId !== undefined
+          ? pendingDeliveryReview(delivery, recordedActions, action.nodeId) !==
+            undefined
+          : false;
+      return updateSubjectState(
+        delivery,
+        action,
+        accepted ? (reviewPending ? 'waiting' : 'completed') : 'running',
+      );
+    }
     case 'manual-test':
       return updateSubjectState(
         delivery,
@@ -104,6 +148,17 @@ export function completedActionGraph(
         `Delivery action kind ${action.kind} is unsupported.`,
       );
   }
+}
+
+function inputId(
+  action: DeliveryActionRecord,
+  name: string,
+): string | undefined {
+  if (action.input === null || typeof action.input !== 'object') {
+    return undefined;
+  }
+  const value = (action.input as Record<string, unknown>)[name];
+  return typeof value === 'string' ? value : undefined;
 }
 
 function applyDecomposition(

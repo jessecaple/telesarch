@@ -12,6 +12,9 @@ export type DeliveryLifecycleActionKind =
   | 'verification'
   | 'leaf-review'
   | 'integration-review'
+  | 'visual-review'
+  | 'visual-adjustment'
+  | 'visual-adjustment-review'
   | 'manual-test'
   | 'delivery-revision'
   | 'user-decision';
@@ -88,6 +91,18 @@ export type ManualTestResult =
       readonly observations: readonly string[];
     };
 
+export type VisualReviewResult =
+  | { readonly status: 'approved' }
+  | { readonly status: 'superseded' };
+
+export type VisualAdjustmentResult =
+  | {
+      readonly status: 'preview-ready';
+      readonly commit?: string;
+      readonly changedPaths?: readonly string[];
+    }
+  | { readonly status: 'revision-required'; readonly reason: string };
+
 export interface UserDecisionResult {
   readonly answer: string;
 }
@@ -105,6 +120,8 @@ export type DeliveryActionResult =
   | ImplementationResult
   | VerificationResult
   | ReviewResult
+  | VisualReviewResult
+  | VisualAdjustmentResult
   | ManualTestResult
   | UserDecisionResult
   | DeliveryRevisionResult;
@@ -170,11 +187,36 @@ export type DeliveryNextAction =
       readonly childNodeIds: readonly string[];
     }
   | {
+      readonly kind: 'run-visual-adjustment';
+      readonly node: DeliveryNodeContract;
+      readonly visualReviewActionId: string;
+      readonly mode: 'correction';
+      readonly findings?: readonly string[];
+      readonly failedVerification?: string;
+    }
+  | {
+      readonly kind: 'run-visual-verification';
+      readonly node: DeliveryNodeContract;
+      readonly visualReviewActionId: string;
+      readonly adjustmentActionId: string;
+    }
+  | {
+      readonly kind: 'run-visual-adjustment-review';
+      readonly node: DeliveryNodeContract;
+      readonly visualReviewActionId: string;
+      readonly adjustmentActionId: string;
+      readonly verificationActionId: string;
+    }
+  | {
       readonly kind: 'request-manual-test';
       readonly node: DeliveryNodeContract;
       readonly tests: readonly string[];
       readonly sourceActionIds: readonly string[];
-      readonly visualReview: boolean;
+    }
+  | {
+      readonly kind: 'request-visual-review';
+      readonly node: DeliveryNodeContract;
+      readonly sourceActionIds: readonly string[];
     }
   | {
       readonly kind: 'run-delivery-revision';

@@ -99,6 +99,13 @@ describe('session host installation', () => {
       'args = ["exec", "--yes", "--package=telesarch@0.1.0", "--", "telesarch", "mcp", "storybook"]\nenabled = true',
     );
     expect(storybook?.content).toContain('preview_stories');
+    const adjustment = hostInstallationArtifacts('codex', cliCommand).find(
+      (artifact) =>
+        artifact.relativePath === 'agents/telesarch-visual-adjustment.toml',
+    );
+    expect(adjustment?.content).toContain('sandbox_mode = "workspace-write"');
+    expect(adjustment?.content).toContain('mcp", "storybook"]\nenabled = true');
+    expect(adjustment?.content).toContain('run_tests');
 
     const claudeStorybook = hostInstallationArtifacts(
       'claude',

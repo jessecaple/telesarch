@@ -27,14 +27,12 @@ describe('delivery review boundary', () => {
     expect(
       pendingDeliveryReview(delivery, actions(fixture), fixture.nodeId('root')),
     ).toMatchObject({
-      visualReview: true,
+      kind: 'visual-review',
       sourceActionIds: ['composition-1'],
     });
 
-    completeAction(fixture, 'visual-review-1', 'manual-test', {
+    completeAction(fixture, 'visual-review-1', 'visual-review', {
       sourceActionIds: ['composition-1'],
-      visualReview: true,
-      tests: ['Review the interface.'],
     });
     expect(
       pendingDeliveryReview(delivery, actions(fixture), fixture.nodeId('root')),
@@ -66,7 +64,9 @@ function completeAction(
     expectedRevision: created.revision,
     status: 'completed',
     result:
-      kind === 'manual-test' ? { status: 'passed' } : { status: 'completed' },
+      kind === 'visual-review'
+        ? { status: 'approved' }
+        : { status: 'completed' },
     occurredAtMs: fixture.occurredAtMs(),
   });
 }

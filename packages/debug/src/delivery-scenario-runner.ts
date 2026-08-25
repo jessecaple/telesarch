@@ -115,6 +115,16 @@ export async function runDeliveryScenario(
   );
   if (
     complete.state === 'Needs your input' &&
+    complete.action?.kind === 'visual-review'
+  ) {
+    complete = await callSession<CoordinatorSessionState>(
+      deliveryWorktree,
+      contractsRoot,
+      'approve_visual_review',
+    );
+  }
+  if (
+    complete.state === 'Needs your input' &&
     complete.action?.kind === 'manual-test'
   ) {
     complete = await callSession<CoordinatorSessionState>(

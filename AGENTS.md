@@ -61,6 +61,8 @@ Every node contains:
 - Accepting a delivery creates one branch and linked worktree. All nodes use them.
 - Implement eligible leaves sequentially. Each successful leaf is one coherent commit when practical.
 - Review each leaf once. Review each parent that combines multiple implemented children once, including the root.
+- Keep a coherent UI boundary's visual review open across in-scope adjustments. Resume one visual-adjustment responsibility, keep its Storybook preview warm, and run verification and affected review once after approval.
+- Route visual feedback that changes behavior, scope, or product direction through delivery revision.
 - Accepted review findings become explicit correction work and receive their own leaf review.
 - User attention is limited to unresolved product decisions, coherent visual reviews, and behavior automated checks cannot establish.
 - Review each Storybook-backed interface outcome after its nearest multi-child parent passes integration review. Carry single-child outcomes to the next such boundary or the root. Revisions that change the interface require another visual review.
