@@ -22,6 +22,7 @@ import {
   orderedDeliveryNodes,
   requireDeliveryNode,
 } from './delivery-graph-state.js';
+import { pendingDeliveryReview } from './delivery-review-boundary.js';
 import type {
   DeliveryNextAction,
   DeliveryRevisionTrigger,
@@ -78,7 +79,7 @@ export function deriveDeliveryNextAction(
     if (node.kind !== 'leaf' || node.state === 'completed') continue;
     if (blockedNodeIds.has(node.nodeId)) continue;
     if (!dependenciesComplete(delivery, node.nodeId)) continue;
-    return deriveLeafAction(node, currentActions);
+    return deriveLeafAction(delivery, node, currentActions);
   }
 
   for (const node of [...ordered].reverse()) {
@@ -86,7 +87,16 @@ export function deriveDeliveryNextAction(
     if (blockedNodeIds.has(node.nodeId)) continue;
     const children = deliveryChildren(delivery, node.nodeId);
     if (!children.every((child) => child.state === 'completed')) continue;
-    if (children.length === 1) return { kind: 'complete-parent', node };
+    if (children.length === 1) {
+      const review =
+        node.parentNodeId === undefined
+          ? pendingDeliveryReview(delivery, currentActions, node.nodeId)
+          : undefined;
+      if (review !== undefined) {
+        return { kind: 'request-manual-test', node, ...review };
+      }
+      return { kind: 'complete-parent', node };
+    }
     const review = latestCompleted(
       currentActions,
       node.nodeId,
@@ -101,6 +111,14 @@ export function deriveDeliveryNextAction(
     }
     const result = reviewResult(review);
     if (result.status === 'accepted') {
+      const pending = pendingDeliveryReview(
+        delivery,
+        currentActions,
+        node.nodeId,
+      );
+      if (pending !== undefined) {
+        return { kind: 'request-manual-test', node, ...pending };
+      }
       throw new DeliveryLifecycleDataError(
         `Accepted integration review ${review.actionId} did not complete its node.`,
       );
@@ -121,6 +139,7 @@ export function deriveDeliveryNextAction(
 }
 
 function deriveLeafAction(
+  delivery: DeliveryRecord,
   node: DeliveryNodeContract,
   actions: readonly DeliveryActionRecord[],
 ): DeliveryNextAction {
@@ -160,7 +179,7 @@ function deriveLeafAction(
   }
 
   const review = completed(actions, node.nodeId, 'leaf-review').at(-1);
-  if (review === undefined) {
+  if (review === undefined || review.sequence < implementation.sequence) {
     return {
       kind: 'run-leaf-review',
       node,
@@ -181,18 +200,10 @@ function deriveLeafAction(
     };
   }
 
-  const tests = manualTests(implementations);
-  if (tests.length > 0) {
-    const manual = [...completed(actions, node.nodeId, 'manual-test')]
-      .reverse()
-      .find((candidate) => candidate.sequence > implementation.sequence);
-    if (manual === undefined) {
-      return { kind: 'request-manual-test', node, tests };
-    }
-    if (manualTestResult(manual).status === 'failed') {
-      throw new DeliveryLifecycleDataError(
-        `Manual test ${manual.actionId} was not routed to delivery revision.`,
-      );
+  if (node.parentNodeId === undefined) {
+    const pending = pendingDeliveryReview(delivery, actions, node.nodeId);
+    if (pending !== undefined) {
+      return { kind: 'request-manual-test', node, ...pending };
     }
   }
   throw new DeliveryLifecycleDataError(
@@ -327,17 +338,4 @@ function inputId(
     return undefined;
   const value = (action.input as Record<string, unknown>)[name];
   return typeof value === 'string' ? value : undefined;
-}
-
-function manualTests(
-  actions: readonly DeliveryActionRecord[],
-): readonly string[] {
-  return [
-    ...new Set(
-      actions.flatMap((action) => {
-        const result = implementationResult(action);
-        return result.status === 'completed' ? (result.manualTests ?? []) : [];
-      }),
-    ),
-  ];
 }

@@ -227,15 +227,19 @@ export class DeliverySessionWorkflow {
   }
 
   confirmIntegrated() {
-    return this.withAsyncHandoff((handoff, delivery) =>
+    return this.withCleanupHandoff((handoff, delivery) =>
       handoff.confirmIntegrated(delivery.deliveryId),
     );
   }
 
   abandon() {
-    return this.withAsyncHandoff((handoff, delivery) =>
+    return this.withCleanupHandoff((handoff, delivery) =>
       handoff.abandon(delivery.deliveryId),
     );
+  }
+
+  close(): Promise<void> {
+    return this.storybook.stopAll();
   }
 
   async clearDeliveries(): Promise<readonly DeliveryCleanupResult[]> {
@@ -319,6 +323,28 @@ export class DeliverySessionWorkflow {
     const authority = openRepositoryAuthority(this.workingDirectory);
     try {
       const delivery = this.requireSelected(authority.database);
+      return await operation(
+        new DeliveryGitHandoff(
+          authority.database,
+          primaryCheckout(this.workingDirectory),
+        ),
+        delivery,
+      );
+    } finally {
+      authority.database.close();
+    }
+  }
+
+  private async withCleanupHandoff<T>(
+    operation: (
+      handoff: DeliveryGitHandoff,
+      delivery: DeliveryRecord,
+    ) => Promise<T>,
+  ): Promise<T> {
+    const authority = openRepositoryAuthority(this.workingDirectory);
+    try {
+      const delivery = this.requireSelected(authority.database);
+      await this.storybook.stopWorktree(delivery.worktreePath);
       return await operation(
         new DeliveryGitHandoff(
           authority.database,

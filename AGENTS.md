@@ -62,7 +62,8 @@ Every node contains:
 - Implement eligible leaves sequentially. Each successful leaf is one coherent commit when practical.
 - Review each leaf once. Review each parent that combines multiple implemented children once, including the root.
 - Accepted review findings become explicit correction work and receive their own leaf review.
-- User attention is limited to unresolved product decisions and assigned manual behavior tests.
+- User attention is limited to unresolved product decisions, coherent visual reviews, and behavior automated checks cannot establish.
+- Review each Storybook-backed interface outcome after its nearest multi-child parent passes integration review. Carry single-child outcomes to the next such boundary or the root. Revisions that change the interface require another visual review.
 - Only the root delivery integrates. Before handoff, reconcile it with the current primary branch and verify the result.
 - For a GitHub remote, attempt one push and pull request using the developer's existing Git and `gh` credentials. Otherwise report the retained branch and worktree. The user controls merging.
 - Delete local delivery state only after integration is confirmed. Abandonment preserves any otherwise unreachable source commits.

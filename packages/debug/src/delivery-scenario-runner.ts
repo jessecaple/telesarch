@@ -108,11 +108,22 @@ export async function runDeliveryScenario(
     states.push(withoutAssignment(resumed));
     roles.push(currentAssignment.role);
   }
-  const complete = await callSession<CoordinatorSessionState>(
+  let complete = await callSession<CoordinatorSessionState>(
     deliveryWorktree,
     contractsRoot,
     'next_action',
   );
+  if (
+    complete.state === 'Needs your input' &&
+    complete.action?.kind === 'manual-test'
+  ) {
+    complete = await callSession<CoordinatorSessionState>(
+      deliveryWorktree,
+      contractsRoot,
+      'submit_manual_test',
+      { passed: true, observations: [] },
+    );
+  }
   if (complete.state !== 'Complete') {
     throw new Error(`The scenario ended in ${complete.state}.`);
   }
