@@ -20,11 +20,13 @@ export async function runMcpCommand(
 ): Promise<void> {
   const storybook =
     surface === 'storybook' ? new RepositoryStorybookMcp(worktree) : undefined;
+  const session =
+    surface === 'session'
+      ? new RepositorySessionExecutors(worktree, contractsRoot)
+      : undefined;
   const factory = (): McpServer =>
     surface === 'session'
-      ? createSessionMcp(
-          new RepositorySessionExecutors(worktree, contractsRoot),
-        )
+      ? createSessionMcp(session as RepositorySessionExecutors)
       : surface === 'role'
         ? createRoleMcp(new RepositoryRoleExecutors(worktree, contractsRoot))
         : (storybook as RepositoryStorybookMcp).createServer();
@@ -38,6 +40,6 @@ export async function runMcpCommand(
   try {
     await handle.close();
   } finally {
-    await storybook?.close();
+    await Promise.all([storybook?.close(), session?.close()]);
   }
 }

@@ -87,6 +87,11 @@ describe('delivery lifecycle', () => {
     expect(
       fixture.complete('run-verification', { status: 'passed' }),
     ).toMatchObject({
+      kind: 'run-leaf-review',
+    });
+    expect(
+      fixture.complete('run-leaf-review', { status: 'accepted' }),
+    ).toMatchObject({
       kind: 'request-manual-test',
       tests: ['Confirm the visible behavior.'],
     });
@@ -240,7 +245,7 @@ describe('delivery lifecycle', () => {
     });
   });
 
-  it('continues independent work while one delivery cone waits for the user', () => {
+  it('defers manual tests until the containing integration review passes', () => {
     const fixture = createFixture();
     fixture.decomposeChildren([
       fixture.child('visual', 0),
@@ -256,30 +261,23 @@ describe('delivery lifecycle', () => {
     expect(
       fixture.complete('run-leaf-review', { status: 'accepted' }),
     ).toMatchObject({
-      kind: 'request-manual-test',
-      node: { nodeId: fixture.nodeId('visual') },
-    });
-    const waiting = fixture.lifecycle.startNextAction({
-      deliveryId: 'delivery',
-      actionId: 'manual-wait',
-      occurredAtMs: fixture.occurredAtMs(),
-    });
-    expect(waiting.action.status).toBe('waiting');
-    expect(fixture.next()).toMatchObject({
       kind: 'run-implementation',
       node: { nodeId: fixture.nodeId('independent') },
     });
     completeAcceptedLeaf(fixture, 'independent');
     expect(fixture.next()).toMatchObject({
-      kind: 'wait-for-user',
-      action: { actionId: 'manual-wait' },
+      kind: 'run-integration-review',
     });
-    fixture.lifecycle.completeAction({
-      actionId: 'manual-wait',
-      result: { status: 'passed' },
-      occurredAtMs: fixture.occurredAtMs(),
+    expect(
+      fixture.complete('run-integration-review', { status: 'accepted' }),
+    ).toMatchObject({
+      kind: 'request-manual-test',
+      node: { nodeId: fixture.nodeId('root') },
+      tests: ['Inspect the visual result.'],
     });
-    expect(fixture.next().kind).toBe('run-integration-review');
+    expect(
+      fixture.complete('request-manual-test', { status: 'passed' }),
+    ).toMatchObject({ kind: 'integration-ready' });
   });
 
   it('turns integration findings into reviewed correction work', () => {

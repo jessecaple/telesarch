@@ -52,11 +52,12 @@ export function stateForDirective(
 
 export function userState(action: DeliveryActionRecord): DeliverySessionState {
   const input = object(action.input);
+  const visualReview = input.visualReview === true;
   return {
     state: 'Needs your input',
     message:
       action.kind === 'manual-test'
-        ? `Please test: ${stringList(input.tests).join('; ')}`
+        ? `${visualReview ? 'Please review' : 'Please test'}: ${stringList(input.tests).join('; ')}`
         : String(input.question ?? 'A decision is required.'),
     action,
   };

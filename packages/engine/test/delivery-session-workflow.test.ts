@@ -1,7 +1,6 @@
-import { execFileSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { dirname, join } from 'node:path';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { afterEach, describe, expect, it } from 'vitest';
@@ -13,6 +12,14 @@ import {
   inspectDelivery,
   inspectRepositorySetup,
 } from '../src/index.js';
+import {
+  assignmentSource,
+  child,
+  git,
+  intent,
+  requireAssignment,
+  writeFile,
+} from './delivery-session-test-support.js';
 
 const contractsRoot = fileURLToPath(
   new URL('../../agent-contracts', import.meta.url),
@@ -190,6 +197,18 @@ describe('delivery session workflow', () => {
     });
 
     await expect(session.nextAction()).resolves.toMatchObject({
+      state: 'Needs your input',
+      message: expect.stringContaining('Please review:'),
+      action: {
+        input: {
+          visualReview: true,
+          sourceActionIds: [expect.any(String)],
+        },
+      },
+    });
+    expect(
+      session.submitManualTest({ passed: true, observations: [] }),
+    ).toMatchObject({
       state: 'Complete',
       message: 'The delivery is ready for handoff.',
     });
@@ -345,57 +364,3 @@ describe('delivery session workflow', () => {
     return repository;
   }
 });
-
-function intent(title: string) {
-  return {
-    title,
-    goal: `${title} goal.`,
-    provides: [`${title} outcome`],
-    consumes: [],
-    completionCriteria: [`${title} is complete.`],
-    notInScope: [],
-    designHorizon: [],
-  };
-}
-
-function child(nodeId: string, displayOrder: number) {
-  return {
-    nodeId,
-    displayOrder,
-    title: nodeId,
-    goal: `Deliver ${nodeId}.`,
-    provides: [`${nodeId} outcome`],
-    consumes: [],
-    completionCriteria: [`${nodeId} works.`],
-    notInScope: [],
-  };
-}
-
-function requireAssignment(
-  state: Awaited<ReturnType<DeliverySessionWorkflow['nextAction']>>,
-) {
-  if (state.state !== 'Working' || state.assignment === undefined) {
-    throw new Error('Expected a role assignment.');
-  }
-  return state.assignment;
-}
-
-function assignmentSource(
-  assignment: ReturnType<typeof requireAssignment>,
-): Record<string, unknown> {
-  const input = assignment.input as Record<string, unknown>;
-  return input.source as Record<string, unknown>;
-}
-
-function writeFile(root: string, relativePath: string, contents: string): void {
-  const path = join(root, relativePath);
-  mkdirSync(dirname(path), { recursive: true });
-  writeFileSync(path, contents);
-}
-
-function git(workingDirectory: string, ...arguments_: string[]): string {
-  return execFileSync('git', arguments_, {
-    cwd: workingDirectory,
-    encoding: 'utf8',
-  }).trim();
-}

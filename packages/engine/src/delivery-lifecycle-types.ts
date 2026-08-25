@@ -173,6 +173,8 @@ export type DeliveryNextAction =
       readonly kind: 'request-manual-test';
       readonly node: DeliveryNodeContract;
       readonly tests: readonly string[];
+      readonly sourceActionIds: readonly string[];
+      readonly visualReview: boolean;
     }
   | {
       readonly kind: 'run-delivery-revision';

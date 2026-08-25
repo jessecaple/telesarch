@@ -153,7 +153,7 @@ export function createSessionMcp(
     'submit_manual_test',
     {
       description:
-        'Record the developer’s result for the pending manual behavior tests.',
+        'Record the developer’s result for the pending manual behavior or visual review.',
       inputSchema: z.object({ passed: z.boolean(), observations: strings }),
     },
     async (params) => result(executors.workflow.submitManualTest(params)),

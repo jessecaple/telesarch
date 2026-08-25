@@ -20,6 +20,7 @@ import {
   deliveryNodeId,
   normalizeDeliveryGraphNodeIds,
 } from './delivery-node-identity.js';
+import { pendingDeliveryReview } from './delivery-review-boundary.js';
 import type { DeliveryActionResult } from './delivery-lifecycle-types.js';
 
 export function completedActionGraph(
@@ -46,38 +47,40 @@ export function completedActionGraph(
       );
     }
     case 'verification': {
-      const outcome = verificationResult(recorded);
-      if (outcome.status === 'failed') {
-        return updateSubjectState(delivery, action, 'running');
-      }
-      return updateSubjectState(
-        delivery,
-        action,
-        correctionIsComplete(currentActions, action.nodeId)
-          ? hasManualTests(currentActions, action.nodeId, recorded)
-            ? 'waiting'
-            : 'completed'
-          : 'running',
-      );
+      verificationResult(recorded);
+      return updateSubjectState(delivery, action, 'running');
     }
     case 'leaf-review': {
       const outcome = reviewResult(recorded);
+      const node = subject(delivery, action);
+      const reviewPending =
+        outcome.status === 'accepted' && node.parentNodeId === undefined
+          ? pendingDeliveryReview(delivery, currentActions, node.nodeId) !==
+            undefined
+          : false;
       return updateSubjectState(
         delivery,
         action,
         outcome.status === 'findings'
           ? 'running'
-          : hasManualTests(currentActions, action.nodeId)
+          : reviewPending
             ? 'waiting'
             : 'completed',
       );
     }
-    case 'integration-review':
+    case 'integration-review': {
+      const accepted = reviewResult(recorded).status === 'accepted';
+      const reviewPending =
+        accepted && action.nodeId !== undefined
+          ? pendingDeliveryReview(delivery, currentActions, action.nodeId) !==
+            undefined
+          : false;
       return updateSubjectState(
         delivery,
         action,
-        reviewResult(recorded).status === 'accepted' ? 'completed' : 'waiting',
+        accepted ? (reviewPending ? 'waiting' : 'completed') : 'waiting',
       );
+    }
     case 'manual-test':
       return updateSubjectState(
         delivery,
@@ -161,53 +164,6 @@ function applyDecomposition(
       })),
     ],
   };
-}
-
-function correctionIsComplete(
-  actions: readonly DeliveryActionRecord[],
-  nodeId: string | undefined,
-): boolean {
-  if (nodeId === undefined) return false;
-  const review = [...actions]
-    .reverse()
-    .find(
-      (candidate) =>
-        candidate.nodeId === nodeId &&
-        candidate.kind === 'leaf-review' &&
-        candidate.status === 'completed',
-    );
-  if (review === undefined || reviewResult(review).status !== 'findings') {
-    return false;
-  }
-  return actions.some(
-    (candidate) =>
-      candidate.nodeId === nodeId &&
-      candidate.kind === 'implementation' &&
-      candidate.status === 'completed' &&
-      candidate.sequence > review.sequence,
-  );
-}
-
-function hasManualTests(
-  actions: readonly DeliveryActionRecord[],
-  nodeId: string | undefined,
-  additional?: DeliveryActionRecord,
-): boolean {
-  return [...actions, ...(additional === undefined ? [] : [additional])].some(
-    (candidate) => {
-      if (
-        candidate.nodeId !== nodeId ||
-        candidate.kind !== 'implementation' ||
-        candidate.status !== 'completed'
-      ) {
-        return false;
-      }
-      const result = implementationResult(candidate);
-      return (
-        result.status === 'completed' && (result.manualTests?.length ?? 0) > 0
-      );
-    },
-  );
 }
 
 function updateSubjectState(

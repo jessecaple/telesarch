@@ -94,4 +94,10 @@ export class RepositorySessionExecutors {
       authority.database.close();
     }
   }
+
+  async close(): Promise<void> {
+    this.source?.projections.close();
+    this.source = undefined;
+    await this.workflow.close();
+  }
 }
