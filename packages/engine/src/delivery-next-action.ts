@@ -11,6 +11,7 @@ import {
   reviewResult,
   userDecisionResult,
   verificationResult,
+  visualAdjustmentResult,
 } from './delivery-action-results.js';
 import { actionsAfterLatestAppliedRevision } from './delivery-action-scope.js';
 import { DeliveryLifecycleDataError } from './delivery-lifecycle-error.js';
@@ -22,11 +23,15 @@ import {
   orderedDeliveryNodes,
   requireDeliveryNode,
 } from './delivery-graph-state.js';
-import { pendingDeliveryReview } from './delivery-review-boundary.js';
+import {
+  pendingDeliveryReview,
+  type PendingDeliveryReview,
+} from './delivery-review-boundary.js';
 import type {
   DeliveryNextAction,
   DeliveryRevisionTrigger,
 } from './delivery-lifecycle-types.js';
+import { deriveVisualAdjustmentAction } from './delivery-visual-adjustment.js';
 
 export function deriveDeliveryNextAction(
   delivery: DeliveryRecord,
@@ -38,9 +43,13 @@ export function deriveDeliveryNextAction(
   const currentActions = actionsAfterLatestAppliedRevision(actions);
   const waiting = currentActions.filter(
     (action) =>
-      ((action.kind === 'manual-test' || action.kind === 'user-decision') &&
+      ((action.kind === 'manual-test' ||
+        action.kind === 'visual-review' ||
+        action.kind === 'user-decision') &&
         action.status === 'waiting') ||
-      ((action.kind === 'manual-test' || action.kind === 'user-decision') &&
+      ((action.kind === 'manual-test' ||
+        action.kind === 'visual-review' ||
+        action.kind === 'user-decision') &&
         (action.status === 'pending' || action.status === 'running')),
   );
   const running = currentActions.find(
@@ -58,6 +67,12 @@ export function deriveDeliveryNextAction(
   if (queuedRevision !== undefined) {
     return { kind: 'continue-action', action: queuedRevision };
   }
+  const visualReview = waiting.find(
+    (action) => action.kind === 'visual-review',
+  );
+  if (visualReview !== undefined) {
+    return { kind: 'wait-for-user', action: visualReview };
+  }
   const blockedNodeIds = blockedDeliveryCone(delivery, waiting);
 
   const revision = pendingRevision(delivery, actions);
@@ -68,6 +83,11 @@ export function deriveDeliveryNextAction(
   ) {
     return revision;
   }
+  const visualFinalization = deriveVisualAdjustmentAction(
+    delivery,
+    currentActions,
+  );
+  if (visualFinalization !== undefined) return visualFinalization;
   const ordered = orderedDeliveryNodes(delivery);
   const pending = ordered.find(
     (node) => node.kind === 'pending' && !blockedNodeIds.has(node.nodeId),
@@ -93,7 +113,7 @@ export function deriveDeliveryNextAction(
           ? pendingDeliveryReview(delivery, currentActions, node.nodeId)
           : undefined;
       if (review !== undefined) {
-        return { kind: 'request-manual-test', node, ...review };
+        return reviewDirective(node, review);
       }
       return { kind: 'complete-parent', node };
     }
@@ -117,7 +137,7 @@ export function deriveDeliveryNextAction(
         node.nodeId,
       );
       if (pending !== undefined) {
-        return { kind: 'request-manual-test', node, ...pending };
+        return reviewDirective(node, pending);
       }
       throw new DeliveryLifecycleDataError(
         `Accepted integration review ${review.actionId} did not complete its node.`,
@@ -203,7 +223,7 @@ function deriveLeafAction(
   if (node.parentNodeId === undefined) {
     const pending = pendingDeliveryReview(delivery, actions, node.nodeId);
     if (pending !== undefined) {
-      return { kind: 'request-manual-test', node, ...pending };
+      return reviewDirective(node, pending);
     }
   }
   throw new DeliveryLifecycleDataError(
@@ -270,6 +290,19 @@ function pendingRevision(
           },
         };
       }
+    } else if (action.kind === 'visual-adjustment') {
+      const result = visualAdjustmentResult(action);
+      if (result.status === 'revision-required') {
+        pending = {
+          kind: 'revision',
+          nodeId,
+          trigger: {
+            kind: 'implementation-discovery',
+            actionId: action.actionId,
+            reason: result.reason,
+          },
+        };
+      }
     } else if (action.kind === 'delivery-revision') {
       const result = deliveryRevisionResult(action);
       pending =
@@ -306,6 +339,24 @@ function pendingRevision(
         ...(pending.recommendation === undefined
           ? {}
           : { recommendation: pending.recommendation }),
+      };
+}
+
+function reviewDirective(
+  node: DeliveryNodeContract,
+  review: PendingDeliveryReview,
+): DeliveryNextAction {
+  return review.kind === 'visual-review'
+    ? {
+        kind: 'request-visual-review',
+        node,
+        sourceActionIds: review.sourceActionIds,
+      }
+    : {
+        kind: 'request-manual-test',
+        node,
+        tests: review.tests,
+        sourceActionIds: review.sourceActionIds,
       };
 }
 

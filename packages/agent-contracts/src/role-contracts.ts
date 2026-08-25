@@ -7,6 +7,7 @@ export const runtimeRoles = [
   'leaf-review',
   'integration-review',
   'storybook-composition',
+  'visual-adjustment',
 ] as const;
 
 export type RuntimeRole = (typeof runtimeRoles)[number];
@@ -19,6 +20,8 @@ export const runtimeCalls = [
   'leaf-review-completed-leaf',
   'integration-review-completed-parent',
   'storybook-composition-interface',
+  'visual-adjustment-requested-change',
+  'integration-review-visual-adjustment',
 ] as const;
 
 export type RuntimeCall = (typeof runtimeCalls)[number];
@@ -76,6 +79,16 @@ export const roleConfigurations: Record<RuntimeRole, RoleConfiguration> = {
     ],
     'roles/storybook-composition/shared.instructions.md',
   ),
+  'visual-adjustment': role(
+    'standard',
+    'read-write',
+    [
+      contextInstructions,
+      engineeringInstructions,
+      'instruction-sets/storybook/shared.instructions.md',
+    ],
+    'roles/visual-adjustment/shared.instructions.md',
+  ),
 };
 
 export const callConfigurations: Record<RuntimeCall, CallConfiguration> = {
@@ -114,6 +127,16 @@ export const callConfigurations: Record<RuntimeCall, CallConfiguration> = {
     'interface',
     'storybook-composition-result',
   ),
+  'visual-adjustment-requested-change': contract(
+    'visual-adjustment',
+    'requested-change',
+    'visual-adjustment-result',
+  ),
+  'integration-review-visual-adjustment': contract(
+    'integration-review',
+    'visual-adjustment',
+    'review-result',
+  ),
 };
 
 const contextTools = [
@@ -144,6 +167,12 @@ export const roleToolAllowlists: Record<RuntimeRole, readonly string[]> = {
   'leaf-review': ['pull_assignment', 'submit_result', ...contextTools],
   'integration-review': ['pull_assignment', 'submit_result', ...contextTools],
   'storybook-composition': [
+    'pull_assignment',
+    'submit_result',
+    ...contextTools,
+    ...storybookRoleTools,
+  ],
+  'visual-adjustment': [
     'pull_assignment',
     'submit_result',
     ...contextTools,

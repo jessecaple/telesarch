@@ -71,7 +71,9 @@ export function buildDeliveryRoleAssignment(input: {
   const responsibilityKey =
     contract.role === 'implementation'
       ? `implementation:${nodeId}`
-      : `${contract.role}:${action.actionId}`;
+      : contract.role === 'visual-adjustment'
+        ? `visual-adjustment:${inputString(action.input, 'visualReviewActionId') ?? action.actionId}`
+        : `${contract.role}:${action.actionId}`;
   return {
     actionId: action.actionId,
     deliveryId: delivery.deliveryId,
@@ -82,8 +84,11 @@ export function buildDeliveryRoleAssignment(input: {
     responsibilityKey,
     resume:
       input.resume ??
-      (contract.role === 'implementation' &&
-        object(action.input).mode === 'correction'),
+      ((contract.role === 'implementation' &&
+        object(action.input).mode === 'correction') ||
+        (contract.role === 'visual-adjustment' &&
+          (numberField(action.input, 'iteration') > 1 ||
+            object(action.input).mode === 'correction'))),
     workspaceAccess: roleConfigurations[contract.role].workspaceAccess,
     workingDirectory: delivery.worktreePath,
     instructions: contract.instructionPaths.map((path) =>
@@ -125,6 +130,17 @@ function sourceStartingCommit(
 ): string {
   if (action.kind === 'implementation') {
     return inputString(action.input, 'baseCommit') ?? delivery.baseCommit;
+  }
+  if (action.kind === 'visual-adjustment') {
+    return inputString(action.input, 'baseCommit') ?? delivery.baseCommit;
+  }
+  if (action.kind === 'visual-adjustment-review') {
+    const reviewId = inputString(action.input, 'visualReviewActionId');
+    const review =
+      reviewId === undefined
+        ? undefined
+        : readDeliveryAction(authority, reviewId);
+    return inputString(review?.input, 'baseCommit') ?? delivery.baseCommit;
   }
   if (
     action.kind === 'leaf-review' ||
@@ -176,11 +192,20 @@ export function actionCall(action: DeliveryActionRecord): RuntimeCall {
       return 'integration-review-completed-parent';
     case 'storybook-composition':
       return 'storybook-composition-interface';
+    case 'visual-adjustment':
+      return 'visual-adjustment-requested-change';
+    case 'visual-adjustment-review':
+      return 'integration-review-visual-adjustment';
     default:
       throw new DeliveryLifecycleError(
         `Delivery action ${action.kind} is not assigned to a role.`,
       );
   }
+}
+
+function numberField(value: unknown, key: string): number {
+  const field = object(value)[key];
+  return typeof field === 'number' ? field : 0;
 }
 
 export function resultSchemaPath(action: DeliveryActionRecord): string {

@@ -153,10 +153,31 @@ export function createSessionMcp(
     'submit_manual_test',
     {
       description:
-        'Record the developer’s result for the pending manual behavior or visual review.',
+        'Record the developer’s result for the pending manual behavior test.',
       inputSchema: z.object({ passed: z.boolean(), observations: strings }),
     },
     async (params) => result(executors.workflow.submitManualTest(params)),
+  );
+
+  server.registerTool(
+    'approve_visual_review',
+    {
+      description:
+        'Approve the currently presented visual result and close its adjustment session.',
+      inputSchema: z.object({}),
+    },
+    async () => result(executors.workflow.approveVisualReview()),
+  );
+
+  server.registerTool(
+    'request_visual_adjustment',
+    {
+      description:
+        'Record in-scope visual feedback and queue the next adjustment assignment for the open review.',
+      inputSchema: z.object({ feedback: z.string().min(1) }),
+    },
+    async ({ feedback }) =>
+      result(executors.workflow.requestVisualAdjustment(feedback)),
   );
 
   server.registerTool(

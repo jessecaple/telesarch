@@ -86,6 +86,8 @@ export {
   type UserDecisionResult,
   type VerificationResult,
   type VerificationCommandEvidence,
+  type VisualAdjustmentResult,
+  type VisualReviewResult,
 } from './delivery-lifecycle-types.js';
 export {
   AgentResultRejectionError,

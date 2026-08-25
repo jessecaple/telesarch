@@ -9,6 +9,8 @@ import type {
   ReviewResult,
   UserDecisionResult,
   VerificationResult,
+  VisualAdjustmentResult,
+  VisualReviewResult,
 } from './delivery-lifecycle-types.js';
 
 export function decompositionResult(
@@ -74,6 +76,39 @@ export function manualTestResult(
   if (result.status === 'passed') return { status: 'passed' };
   if (result.status === 'failed' && nonEmptyTextList(result.observations)) {
     return { status: 'failed', observations: result.observations };
+  }
+  return invalid(action);
+}
+
+export function visualReviewResult(
+  action: DeliveryActionRecord,
+): VisualReviewResult {
+  const result = objectResult(action);
+  if (result.status === 'approved' || result.status === 'superseded') {
+    return { status: result.status };
+  }
+  return invalid(action);
+}
+
+export function visualAdjustmentResult(
+  action: DeliveryActionRecord,
+): VisualAdjustmentResult {
+  const result = objectResult(action);
+  if (result.status === 'revision-required' && text(result.reason)) {
+    return { status: 'revision-required', reason: result.reason };
+  }
+  if (
+    result.status === 'preview-ready' &&
+    (result.commit === undefined || text(result.commit)) &&
+    (result.changedPaths === undefined || textList(result.changedPaths))
+  ) {
+    return {
+      status: 'preview-ready',
+      ...(result.commit === undefined ? {} : { commit: result.commit }),
+      ...(result.changedPaths === undefined
+        ? {}
+        : { changedPaths: result.changedPaths }),
+    };
   }
   return invalid(action);
 }

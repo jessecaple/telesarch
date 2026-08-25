@@ -1,0 +1,1 @@
+Adjust the assigned coherent interface boundary while its visual review remains open. Keep production UI, stories, and focused Storybook tests aligned. Do not commit or run repository-wide verification.

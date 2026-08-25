@@ -31,6 +31,8 @@ describe('session MCP surface', () => {
       'next_action',
       'answer_decision',
       'submit_manual_test',
+      'approve_visual_review',
+      'request_visual_adjustment',
       'request_delivery_revision',
       'delivery_overview',
       'node_context',
@@ -137,6 +139,28 @@ describe('session MCP surface', () => {
     expect(response.structuredContent).toEqual({ ready: [] });
   });
 
+  it('routes visual review approval and feedback to the workflow', async () => {
+    const approveVisualReview = vi.fn().mockReturnValue({ state: 'Working' });
+    const requestVisualAdjustment = vi
+      .fn()
+      .mockReturnValue({ state: 'Working' });
+    await connect(executors({ approveVisualReview, requestVisualAdjustment }));
+
+    await required(client).callTool({
+      name: 'approve_visual_review',
+      arguments: {},
+    });
+    await required(client).callTool({
+      name: 'request_visual_adjustment',
+      arguments: { feedback: 'Reduce the heading weight.' },
+    });
+
+    expect(approveVisualReview).toHaveBeenCalledOnce();
+    expect(requestVisualAdjustment).toHaveBeenCalledWith(
+      'Reduce the heading weight.',
+    );
+  });
+
   it('routes source context through the selected delivery checkout', async () => {
     const sourceContext = vi.fn().mockReturnValue({ packages: [] });
     await connect(executors({ sourceContext }));
@@ -185,6 +209,12 @@ function executors(
       overrides.nextAction ?? vi.fn().mockResolvedValue({ state: 'Working' }),
     answerDecision: vi.fn().mockReturnValue({ state: 'Working' }),
     submitManualTest: vi.fn().mockReturnValue({ state: 'Working' }),
+    approveVisualReview:
+      overrides.approveVisualReview ??
+      vi.fn().mockReturnValue({ state: 'Working' }),
+    requestVisualAdjustment:
+      overrides.requestVisualAdjustment ??
+      vi.fn().mockReturnValue({ state: 'Working' }),
     requestRevision: vi.fn().mockReturnValue({ state: 'Working' }),
     storybookPreview: vi.fn().mockResolvedValue({}),
     handoff: vi.fn().mockResolvedValue({}),

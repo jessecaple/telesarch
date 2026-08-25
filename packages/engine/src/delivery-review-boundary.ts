@@ -6,15 +6,13 @@ import type {
 import {
   implementationResult,
   manualTestResult,
+  visualReviewResult,
 } from './delivery-action-results.js';
 
-const visualReviewTest =
-  'Review the completed interface in Storybook and confirm its appearance and interaction match the approved outcome.';
-
 export interface PendingDeliveryReview {
+  readonly kind: 'manual-test' | 'visual-review';
   readonly tests: readonly string[];
   readonly sourceActionIds: readonly string[];
-  readonly visualReview: boolean;
 }
 
 export function pendingDeliveryReview(
@@ -34,9 +32,16 @@ export function pendingDeliveryReview(
   );
   if (sources.length === 0) return undefined;
 
-  const visualReview = sources.some(
+  const visualSources = sources.filter(
     (action) => action.kind === 'storybook-composition',
   );
+  if (visualSources.length > 0) {
+    return {
+      kind: 'visual-review',
+      tests: [],
+      sourceActionIds: visualSources.map((action) => action.actionId),
+    };
+  }
   const tests = new Set<string>();
   for (const source of sources) {
     if (source.kind !== 'implementation') continue;
@@ -45,12 +50,10 @@ export function pendingDeliveryReview(
       for (const test of result.manualTests ?? []) tests.add(test);
     }
   }
-  if (visualReview) tests.add(visualReviewTest);
-
   return {
+    kind: 'manual-test',
     tests: [...tests],
     sourceActionIds: sources.map((action) => action.actionId),
-    visualReview,
   };
 }
 
@@ -66,11 +69,7 @@ function coveredActionIds(
 ): ReadonlySet<string> {
   const covered = new Set<string>();
   for (const action of actions) {
-    if (
-      action.kind !== 'manual-test' ||
-      action.status !== 'completed' ||
-      manualTestResult(action).status !== 'passed'
-    ) {
+    if (action.status !== 'completed' || !reviewApproved(action)) {
       continue;
     }
     for (const actionId of inputStrings(action, 'sourceActionIds')) {
@@ -78,6 +77,16 @@ function coveredActionIds(
     }
   }
   return covered;
+}
+
+function reviewApproved(action: DeliveryActionRecord): boolean {
+  if (action.kind === 'manual-test') {
+    return manualTestResult(action).status === 'passed';
+  }
+  if (action.kind === 'visual-review') {
+    return visualReviewResult(action).status === 'approved';
+  }
+  return false;
 }
 
 function inputStrings(

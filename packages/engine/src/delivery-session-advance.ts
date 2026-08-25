@@ -29,7 +29,10 @@ export async function advanceDeliverySession(input: {
   const lifecycle = new DeliveryLifecycle(database);
   for (;;) {
     const next = lifecycle.settleSystemActions(delivery.deliveryId, Date.now());
-    if (next.kind === 'run-verification') {
+    if (
+      next.kind === 'run-verification' ||
+      next.kind === 'run-visual-verification'
+    ) {
       const started = lifecycle.startNextAction({
         deliveryId: delivery.deliveryId,
         actionId: randomUUID(),
@@ -41,13 +44,23 @@ export async function advanceDeliverySession(input: {
       ).completeAction({
         actionId: started.action.actionId,
         deliveryId: delivery.deliveryId,
-        checkpointTitle: `Checkpoint ${next.node.title}`,
+        checkpointTitle:
+          next.kind === 'run-visual-verification'
+            ? `Verify visual adjustments for ${next.node.title}`
+            : `Checkpoint ${next.node.title}`,
       });
       continue;
     }
     const existing = continuedRoleAction(next);
     if (existing !== undefined) {
-      return roleState(database, existing, input.contractsRoot, true);
+      return roleState(
+        database,
+        existing,
+        input.contractsRoot,
+        existing.kind !== 'visual-adjustment' ||
+          existing.status !== 'pending' ||
+          inputNumber(existing.input, 'iteration') > 1,
+      );
     }
     if (roleDirective(next)) {
       const action =
@@ -62,6 +75,7 @@ export async function advanceDeliverySession(input: {
     }
     if (
       next.kind === 'request-manual-test' ||
+      next.kind === 'request-visual-review' ||
       next.kind === 'request-decision'
     ) {
       return userState(
@@ -69,11 +83,22 @@ export async function advanceDeliverySession(input: {
           deliveryId: delivery.deliveryId,
           actionId: randomUUID(),
           occurredAtMs: Date.now(),
+          ...(next.kind === 'request-visual-review'
+            ? { context: { baseCommit: currentCommit(delivery.worktreePath) } }
+            : {}),
         }).action,
       );
     }
     return stateForDirective(next);
   }
+}
+
+function inputNumber(value: unknown, name: string): number {
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) {
+    return 0;
+  }
+  const field = (value as Record<string, unknown>)[name];
+  return typeof field === 'number' ? field : 0;
 }
 
 function roleState(
@@ -100,6 +125,8 @@ function roleDirective(next: DeliveryNextAction): boolean {
     'run-implementation',
     'run-leaf-review',
     'run-integration-review',
+    'run-visual-adjustment',
+    'run-visual-adjustment-review',
     'run-delivery-revision',
   ].includes(next.kind);
 }
@@ -108,7 +135,9 @@ function continuedRoleAction(
   next: DeliveryNextAction,
 ): DeliveryActionRecord | undefined {
   return next.kind === 'continue-action' &&
-    !['verification', 'manual-test', 'user-decision'].includes(next.action.kind)
+    !['verification', 'manual-test', 'visual-review', 'user-decision'].includes(
+      next.action.kind,
+    )
     ? next.action
     : undefined;
 }

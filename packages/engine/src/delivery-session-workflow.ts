@@ -9,6 +9,7 @@ import {
   type RepositoryAuthorityDatabase,
 } from '@telesarch/repository-authority';
 import {
+  currentCommit,
   listRepositoryWorktrees,
   repositoryCheckoutFacts,
 } from '@telesarch/git';
@@ -124,6 +125,24 @@ export class DeliverySessionWorkflow {
         ? { status: 'passed' }
         : { status: 'failed', observations: input.observations },
     );
+  }
+
+  approveVisualReview(): DeliverySessionState {
+    return this.completeWaiting('visual-review', { status: 'approved' });
+  }
+
+  requestVisualAdjustment(feedback: string): DeliverySessionState {
+    return this.withAuthority(({ database }) => {
+      const delivery = this.requireSelected(database);
+      new DeliveryLifecycle(database).startVisualAdjustment({
+        deliveryId: delivery.deliveryId,
+        actionId: randomUUID(),
+        feedback,
+        baseCommit: currentCommit(delivery.worktreePath),
+        occurredAtMs: Date.now(),
+      });
+      return this.projectState(database, this.requireSelected(database));
+    });
   }
 
   requestRevision(nodeId: string, summary: string): DeliverySessionState {

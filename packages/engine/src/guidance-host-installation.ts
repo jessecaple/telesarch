@@ -84,7 +84,7 @@ function codexArtifacts(
         '',
         '[mcp_servers.telesarch-storybook]',
         ...codexMcpTransport(cliCommand, 'storybook'),
-        `enabled = ${role === 'storybook-composition' ? 'true' : 'false'}`,
+        `enabled = ${storybookRole(role) ? 'true' : 'false'}`,
         `enabled_tools = ${tomlArray(storybookTools(role))}`,
         '',
       ].join('\n'),
@@ -152,7 +152,11 @@ function claudeToolList(role: RuntimeRole): string {
 }
 
 function storybookTools(role: RuntimeRole): readonly string[] {
-  return role === 'storybook-composition' ? storybookRoleTools : [];
+  return storybookRole(role) ? storybookRoleTools : [];
+}
+
+function storybookRole(role: RuntimeRole): boolean {
+  return role === 'storybook-composition' || role === 'visual-adjustment';
 }
 
 function codexSandbox(role: RuntimeRole): 'read-only' | 'workspace-write' {

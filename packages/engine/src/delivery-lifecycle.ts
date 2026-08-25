@@ -26,6 +26,7 @@ import {
   type DeliveryRevisionTrigger,
   type StartedDeliveryAction,
 } from './delivery-lifecycle-types.js';
+import { createVisualAdjustmentAction } from './delivery-visual-adjustment.js';
 
 export class DeliveryLifecycle {
   constructor(private readonly authority: RepositoryAuthorityDatabase) {}
@@ -110,6 +111,7 @@ export class DeliveryLifecycle {
     const delivery = this.requireDelivery(input.deliveryId);
     const nodeState =
       directive.kind === 'request-manual-test' ||
+      directive.kind === 'request-visual-review' ||
       directive.kind === 'request-decision'
         ? 'waiting'
         : 'running';
@@ -128,6 +130,7 @@ export class DeliveryLifecycle {
     });
     if (
       directive.kind === 'request-manual-test' ||
+      directive.kind === 'request-visual-review' ||
       directive.kind === 'request-decision'
     ) {
       const action = updateDeliveryAction(this.authority, {
@@ -159,8 +162,12 @@ export class DeliveryLifecycle {
     if (input.trigger.summary.trim().length === 0) {
       throw new DeliveryLifecycleError('A delivery revision needs a summary.');
     }
+    const openActions = readOpenDeliveryActions(
+      this.authority,
+      input.deliveryId,
+    );
     if (
-      readOpenDeliveryActions(this.authority, input.deliveryId).some(
+      openActions.some(
         (action) =>
           action.kind === 'delivery-revision' ||
           action.kind === 'user-decision',
@@ -169,6 +176,17 @@ export class DeliveryLifecycle {
       throw new DeliveryLifecycleError(
         'The delivery already has an unresolved revision.',
       );
+    }
+    const visualReview = openActions.find(
+      (action) =>
+        action.kind === 'visual-review' && action.status === 'waiting',
+    );
+    if (visualReview !== undefined) {
+      this.completeAction({
+        actionId: visualReview.actionId,
+        result: { status: 'superseded' },
+        occurredAtMs: input.occurredAtMs,
+      });
     }
     const delivery = this.requireDelivery(input.deliveryId);
     const node = delivery.graph.nodes.find(
@@ -194,6 +212,16 @@ export class DeliveryLifecycle {
       occurredAtMs: input.occurredAtMs,
     });
     return { ...transitioned, directive };
+  }
+
+  startVisualAdjustment(input: {
+    readonly deliveryId: string;
+    readonly actionId: string;
+    readonly feedback: string;
+    readonly baseCommit: string;
+    readonly occurredAtMs: number;
+  }): DeliveryActionRecord {
+    return createVisualAdjustmentAction(this.authority, input);
   }
 
   markActionRunning(
@@ -295,7 +323,11 @@ function startable(
     'run-verification',
     'run-leaf-review',
     'run-integration-review',
+    'run-visual-adjustment',
+    'run-visual-verification',
+    'run-visual-adjustment-review',
     'request-manual-test',
+    'request-visual-review',
     'run-delivery-revision',
     'request-decision',
   ].includes(action.kind);
@@ -304,6 +336,8 @@ function startable(
 function actionKind(action: StartedDeliveryAction['directive']): string {
   if (action.kind === 'request-decision') return 'user-decision';
   if (action.kind === 'request-manual-test') return 'manual-test';
+  if (action.kind === 'request-visual-review') return 'visual-review';
+  if (action.kind === 'run-visual-verification') return 'verification';
   return action.kind.replace(/^run-/, '');
 }
 
