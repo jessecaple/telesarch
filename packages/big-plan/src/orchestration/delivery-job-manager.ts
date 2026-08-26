@@ -1,6 +1,10 @@
 import type { Agent } from '@deepseek-ai/dsh-agent';
 import type { JobId, JobRegistry } from '@deepseek-ai/dsh-jobs';
 
+import {
+  type DeliveryRunLease,
+  PersistedDeliveryRunLease,
+} from './delivery-run-lease.js';
 import { DeliveryRunner } from './delivery-runner.js';
 
 export interface DeliveryJobRequest {
@@ -29,12 +33,17 @@ export class DeliveryJobManager {
   constructor(
     private readonly jobs: JobRegistry,
     private readonly runner: DeliveryRunner,
+    private readonly leases: DeliveryRunLease = new PersistedDeliveryRunLease(),
   ) {}
 
   start(request: DeliveryJobRequest): JobId {
     if (this.activeDeliveries.has(request.deliveryId)) {
       throw new Error('Big Plan delivery already has an active job.');
     }
+    const leaseId = this.leases.acquire(
+      request.workingDirectory,
+      request.deliveryId,
+    );
     this.activeDeliveries.add(request.deliveryId);
     const abort = new AbortController();
 
@@ -46,7 +55,7 @@ export class DeliveryJobManager {
         outputLimitBytes: 50_000,
         run: () => {
           let output = '';
-          const done = this.run(request, abort.signal, (record) => {
+          const done = this.run(request, leaseId, abort.signal, (record) => {
             output += record + '\n';
           });
           const active = {
@@ -73,6 +82,7 @@ export class DeliveryJobManager {
       });
     } catch (error) {
       this.activeDeliveries.delete(request.deliveryId);
+      this.leases.release(request.workingDirectory, leaseId);
       throw error;
     }
   }
@@ -96,6 +106,7 @@ export class DeliveryJobManager {
 
   private async run(
     request: DeliveryJobRequest,
+    leaseId: string,
     signal: AbortSignal,
     progress: (record: string) => void,
   ): Promise<{
@@ -134,6 +145,7 @@ export class DeliveryJobManager {
       };
     } finally {
       this.activeDeliveries.delete(request.deliveryId);
+      this.leases.release(request.workingDirectory, leaseId);
     }
   }
 }

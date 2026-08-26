@@ -142,6 +142,9 @@ export const repositoryAuthoritySchema: SqliteMigration = {
   ) STRICT;
   CREATE INDEX delivery_processes_by_delivery
     ON delivery_processes (delivery_id, stopped_at_ms, process_kind);
+  CREATE UNIQUE INDEX one_active_delivery_runner
+    ON delivery_processes (delivery_id)
+    WHERE stopped_at_ms IS NULL AND process_kind = 'big-plan-runner';
 
   CREATE TABLE external_effects (
     effect_id TEXT PRIMARY KEY CHECK (length(effect_id) > 0),

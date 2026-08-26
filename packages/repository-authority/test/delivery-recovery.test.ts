@@ -92,6 +92,39 @@ describe('delivery recovery', () => {
       { processId: 'scenario', stoppedAtMs: 4 },
     ]);
 
+    recordDeliveryProcess(database, {
+      processId: 'runner-one',
+      deliveryId: 'first',
+      kind: 'big-plan-runner',
+      systemProcessId: 123,
+      workingDirectory: '/worktrees/first',
+      metadata: {},
+      occurredAtMs: 5,
+    });
+    expect(() =>
+      recordDeliveryProcess(database, {
+        processId: 'runner-two',
+        deliveryId: 'first',
+        kind: 'big-plan-runner',
+        systemProcessId: 456,
+        workingDirectory: '/worktrees/first',
+        metadata: {},
+        occurredAtMs: 6,
+      }),
+    ).toThrow();
+    stopDeliveryProcess(database, 'runner-one', 7);
+    expect(
+      recordDeliveryProcess(database, {
+        processId: 'runner-two',
+        deliveryId: 'first',
+        kind: 'big-plan-runner',
+        systemProcessId: 456,
+        workingDirectory: '/worktrees/first',
+        metadata: {},
+        occurredAtMs: 8,
+      }).processId,
+    ).toBe('runner-two');
+
     deleteDelivery(database, { deliveryId: 'first', expectedRevision: 1 });
     expect(readRunningDeliveryProcesses(database, 'first')).toEqual([]);
   });

@@ -9,6 +9,7 @@ import type { JobId } from '@deepseek-ai/dsh-jobs';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import type { DeliveryJobManager } from '../src/orchestration/delivery-job-manager.js';
+import { PersistedDeliveryRunLease } from '../src/orchestration/delivery-run-lease.js';
 import { createBigPlanTools } from '../src/plugin/big-plan-tools.js';
 
 const contractsRoot = fileURLToPath(new URL('../contracts/', import.meta.url));
@@ -93,6 +94,15 @@ describe('Big Plan delivery tools', () => {
       eligible_nodes: [],
     });
     expect(details.current_action).toContain('run-decomposition');
+
+    const leases = new PersistedDeliveryRunLease();
+    const firstLease = leases.acquire(repository, result.delivery_id);
+    expect(() => leases.acquire(repository, result.delivery_id)).toThrow(
+      'active runner in another DSH process',
+    );
+    leases.release(repository, firstLease);
+    const resumedLease = leases.acquire(repository, result.delivery_id);
+    leases.release(repository, resumedLease);
   });
 });
 

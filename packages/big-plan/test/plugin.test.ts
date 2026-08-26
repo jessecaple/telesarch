@@ -54,7 +54,10 @@ describe('Big Plan plugin', () => {
           });
         }),
     } as unknown as DeliveryRunner;
-    const manager = new DeliveryJobManager(jobs, runner);
+    const manager = new DeliveryJobManager(jobs, runner, {
+      acquire: () => 'lease-1',
+      release: () => undefined,
+    });
 
     manager.start({
       workingDirectory: '/tmp/repository',
