@@ -35,7 +35,7 @@ describe('delivery runner subagent boundary', () => {
           result: Promise.resolve({
             output: [],
             stopReason: 'completed' as const,
-            structured: { outcome: 'accepted' },
+            structured: { result: { outcome: 'accepted' } },
           }),
           dispose,
         };
@@ -45,13 +45,19 @@ describe('delivery runner subagent boundary', () => {
     const schema = {
       type: 'object' as const,
       additionalProperties: false,
-      properties: { outcome: { type: 'string' as const, required: true } },
+      properties: { outcome: { type: 'string' as const } },
+      required: ['outcome'],
     };
 
     await expect(
       runner.runAssignment(reviewAssignment(schema), options()),
     ).resolves.toEqual({ outcome: 'accepted' });
-    expect(captured?.outputSchema).toBe(schema);
+    expect(captured?.outputSchema).toEqual({
+      type: 'object',
+      additionalProperties: false,
+      properties: { result: schema },
+      required: ['result'],
+    });
     expect(captured?.toolFilter).toEqual({
       allow: ['read', 'glob', 'grep', 'read_image'],
     });

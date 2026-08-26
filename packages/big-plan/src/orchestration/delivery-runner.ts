@@ -1,11 +1,15 @@
 import type { Agent } from '@deepseek-ai/dsh-agent';
 import type { SubagentRuntime } from '@deepseek-ai/dsh-subagent';
-import type { ObjectJsonSchema } from '@deepseek-ai/dsh-tools';
 import {
   DeliveryRoleWorkflow,
   DeliverySessionWorkflow,
   type DeliveryRoleAssignment,
 } from '@big-plan/engine';
+
+import {
+  subagentResultPayload,
+  subagentResultSchema,
+} from './structured-result-schema.js';
 
 export interface DeliveryRunResult {
   readonly deliveryId: string;
@@ -73,7 +77,7 @@ export class DeliveryRunner {
       signal: options.signal,
       persona: personaFor(assignment),
       prompt: [{ type: 'text', text: assignmentPrompt(assignment) }],
-      outputSchema: assignment.resultSchema as ObjectJsonSchema,
+      outputSchema: subagentResultSchema(assignment.resultSchema),
       toolFilter: toolFilterFor(assignment),
     });
     const execution = run.result.then((result) => {
@@ -94,7 +98,7 @@ export class DeliveryRunner {
             ' subagent returned no structured result.',
         );
       }
-      return result.structured;
+      return subagentResultPayload(result.structured);
     });
     const disposal = run.result.then(
       () => run.dispose(),
@@ -148,7 +152,7 @@ function assignmentPrompt(assignment: DeliveryRoleAssignment): string {
     'Assignment context:',
     JSON.stringify(assignment.input, null, 2),
     '',
-    'Return only the result payload described by this JSON Schema. Do not wrap it in a result property:',
+    'Return an object with one property named result. The result value must match this JSON Schema:',
     JSON.stringify(assignment.resultSchema, null, 2),
   ].join('\n');
 }
