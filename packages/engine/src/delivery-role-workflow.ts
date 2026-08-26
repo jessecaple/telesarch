@@ -42,10 +42,20 @@ export class DeliveryRoleWorkflow {
   async submitResult(
     nodeId: string,
     result: unknown,
+    expectedActionId?: string,
   ): Promise<{ readonly accepted: true }> {
     const authority = openRepositoryAuthority(this.workingDirectory);
     try {
       const action = this.resolveAction(authority, nodeId);
+      if (
+        expectedActionId !== undefined &&
+        action.actionId !== expectedActionId
+      ) {
+        throw new AgentResultRejectionError(
+          'stale',
+          'This result belongs to a superseded delivery action.',
+        );
+      }
       new AgentResultSchemas(this.contractsRoot).validate(
         resultSchemaPath(action),
         { result },

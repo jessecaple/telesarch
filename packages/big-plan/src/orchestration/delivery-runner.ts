@@ -3,6 +3,7 @@ import type { SubagentRuntime } from '@deepseek-ai/dsh-subagent';
 import {
   DeliveryRoleWorkflow,
   DeliverySessionWorkflow,
+  inspectDelivery,
   type DeliveryRoleAssignment,
 } from '@big-plan/engine';
 
@@ -45,7 +46,7 @@ export class DeliveryRunner {
       }
       const state = await session.nextAction();
       if (state.state === 'Complete') {
-        return terminal(options.deliveryId, 'complete', state.message);
+        return await handoffDelivery(session, options);
       }
       if (state.state === 'Needs your input') {
         return terminal(options.deliveryId, 'waiting', state.message);
@@ -61,7 +62,11 @@ export class DeliveryRunner {
       );
       const assignment = role.pullAssignment(state.assignment.subjectNodeId);
       const result = await this.runAssignment(assignment, options);
-      await role.submitResult(assignment.subjectNodeId, result);
+      await role.submitResult(
+        assignment.subjectNodeId,
+        result,
+        assignment.actionId,
+      );
     }
 
     throw new Error('Big Plan exceeded its delivery transition limit.');
@@ -123,6 +128,46 @@ export class DeliveryRunner {
   }
 }
 
+async function handoffDelivery(
+  session: DeliverySessionWorkflow,
+  options: DeliveryRunnerOptions,
+): Promise<DeliveryRunResult> {
+  const delivery = inspectDelivery(
+    options.workingDirectory,
+    options.deliveryId,
+  ).delivery;
+  const root = delivery.graph.nodes.find(
+    ({ parentNodeId }) => parentNodeId === undefined,
+  );
+  if (root === undefined) throw new Error('Big Plan delivery root is missing.');
+  const handoff = await session.handoff({
+    whatChanged: 'Delivered ' + delivery.title + '.',
+    why: root.goal,
+  });
+  switch (handoff.status) {
+    case 'pull-request-created':
+      return terminal(
+        options.deliveryId,
+        'complete',
+        'Created pull request ' + handoff.url,
+      );
+    case 'manual':
+      return terminal(
+        options.deliveryId,
+        'waiting',
+        handoff.problem + ' ' + handoff.action,
+      );
+    case 'recovery-required':
+      return terminal(options.deliveryId, 'blocked', handoff.problem);
+    default:
+      return terminal(
+        options.deliveryId,
+        'blocked',
+        'Delivery handoff stopped at ' + handoff.status + '.',
+      );
+  }
+}
+
 function terminal(
   deliveryId: string,
   status: DeliveryRunResult['status'],
@@ -157,10 +202,12 @@ function assignmentPrompt(assignment: DeliveryRoleAssignment): string {
   ].join('\n');
 }
 
-function toolFilterFor(
-  assignment: DeliveryRoleAssignment,
-): { readonly allow: readonly string[] } | undefined {
+function toolFilterFor(assignment: DeliveryRoleAssignment): {
+  readonly allow: readonly string[];
+} {
   return assignment.workspaceAccess === 'read-only'
     ? { allow: ['read', 'glob', 'grep', 'read_image'] }
-    : undefined;
+    : {
+        allow: ['read', 'glob', 'grep', 'read_image', 'edit', 'write', 'bash'],
+      };
 }
