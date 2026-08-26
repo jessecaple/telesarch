@@ -5,7 +5,6 @@ export {
   roleConfigurations,
   roleInstructions,
   roleToolAllowlists,
-  storybookRoleTools,
   runtimeCalls,
   runtimeRoles,
   type CallConfiguration,

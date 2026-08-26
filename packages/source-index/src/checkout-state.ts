@@ -8,7 +8,7 @@ import {
   listTrackedFiles,
   repositoryCheckoutFacts,
   type TrackedFile,
-} from '@telesarch/git';
+} from '@big-plan/git';
 
 /** The exact checkout an index build or freshness check observed. */
 export interface CheckoutState {

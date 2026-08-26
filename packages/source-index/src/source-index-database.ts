@@ -1,12 +1,12 @@
 import { mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 
-import { repositoryCheckoutFacts } from '@telesarch/git';
+import { repositoryCheckoutFacts } from '@big-plan/git';
 import {
   openSqliteDatabase,
   useSqliteDatabase,
   type SqliteDatabase,
-} from '@telesarch/sqlite';
+} from '@big-plan/sqlite';
 import type Database from 'better-sqlite3';
 
 import { sourceIndexSchema } from './migrations/001-source-index.js';
@@ -30,7 +30,7 @@ export function openSourceIndexDatabase(
 ): SourceIndexDatabase {
   const facts = repositoryCheckoutFacts(workingDirectory);
   return openSourceIndexDatabaseAt(
-    join(facts.gitDirectory, 'telesarch', 'source-index.sqlite'),
+    join(facts.gitDirectory, 'big-plan', 'source-index.sqlite'),
   );
 }
 

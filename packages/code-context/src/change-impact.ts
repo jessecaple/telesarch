@@ -2,7 +2,7 @@ import {
   readCallers,
   readModuleImporters,
   type SourceIndexDatabase,
-} from '@telesarch/source-index';
+} from '@big-plan/source-index';
 
 export interface ChangeImpactEntry {
   readonly path: string;

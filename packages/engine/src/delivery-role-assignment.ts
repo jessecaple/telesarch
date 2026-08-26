@@ -6,7 +6,7 @@ import {
   roleInstructions,
   type RuntimeCall,
   type RuntimeRole,
-} from '@telesarch/agent-contracts';
+} from '@big-plan/agent-contracts';
 import {
   readDelivery,
   readDeliveryAction,
@@ -14,8 +14,8 @@ import {
   type DeliveryActionRecord,
   type DeliveryRecord,
   type RepositoryAuthorityDatabase,
-} from '@telesarch/repository-authority';
-import { changedPathsBetween, currentCommit } from '@telesarch/git';
+} from '@big-plan/repository-authority';
+import { changedPathsBetween, currentCommit } from '@big-plan/git';
 
 import { DeliveryGraphProjections } from './delivery-graph-projections.js';
 import { DeliveryLifecycleError } from './delivery-lifecycle-error.js';
@@ -71,24 +71,19 @@ export function buildDeliveryRoleAssignment(input: {
   const responsibilityKey =
     contract.role === 'implementation'
       ? `implementation:${nodeId}`
-      : contract.role === 'visual-adjustment'
-        ? `visual-adjustment:${inputString(action.input, 'visualReviewActionId') ?? action.actionId}`
-        : `${contract.role}:${action.actionId}`;
+      : `${contract.role}:${action.actionId}`;
   return {
     actionId: action.actionId,
     deliveryId: delivery.deliveryId,
     subjectNodeId: nodeId,
     role: contract.role,
     call,
-    agentName: `telesarch-${contract.role}`,
+    agentName: `big-plan-${contract.role}`,
     responsibilityKey,
     resume:
       input.resume ??
-      ((contract.role === 'implementation' &&
-        object(action.input).mode === 'correction') ||
-        (contract.role === 'visual-adjustment' &&
-          (numberField(action.input, 'iteration') > 1 ||
-            object(action.input).mode === 'correction'))),
+      (contract.role === 'implementation' &&
+        object(action.input).mode === 'correction'),
     workspaceAccess: roleConfigurations[contract.role].workspaceAccess,
     workingDirectory: delivery.worktreePath,
     instructions: contract.instructionPaths.map((path) =>
@@ -115,10 +110,7 @@ export function buildDeliveryRoleAssignment(input: {
         ).slice(0, 200),
         orientation,
       },
-      repository: {
-        lifecycle: configuration.lifecycle,
-        developmentMode: configuration.developmentMode,
-      },
+      repository: { lifecycle: configuration.lifecycle },
     },
   };
 }
@@ -131,21 +123,7 @@ function sourceStartingCommit(
   if (action.kind === 'implementation') {
     return inputString(action.input, 'baseCommit') ?? delivery.baseCommit;
   }
-  if (action.kind === 'visual-adjustment') {
-    return inputString(action.input, 'baseCommit') ?? delivery.baseCommit;
-  }
-  if (action.kind === 'visual-adjustment-review') {
-    const reviewId = inputString(action.input, 'visualReviewActionId');
-    const review =
-      reviewId === undefined
-        ? undefined
-        : readDeliveryAction(authority, reviewId);
-    return inputString(review?.input, 'baseCommit') ?? delivery.baseCommit;
-  }
-  if (
-    action.kind === 'leaf-review' ||
-    action.kind === 'storybook-composition'
-  ) {
+  if (action.kind === 'leaf-review') {
     const implementationId = inputString(
       action.input,
       'implementationActionId',
@@ -190,22 +168,11 @@ export function actionCall(action: DeliveryActionRecord): RuntimeCall {
       return 'leaf-review-completed-leaf';
     case 'integration-review':
       return 'integration-review-completed-parent';
-    case 'storybook-composition':
-      return 'storybook-composition-interface';
-    case 'visual-adjustment':
-      return 'visual-adjustment-requested-change';
-    case 'visual-adjustment-review':
-      return 'integration-review-visual-adjustment';
     default:
       throw new DeliveryLifecycleError(
         `Delivery action ${action.kind} is not assigned to a role.`,
       );
   }
-}
-
-function numberField(value: unknown, key: string): number {
-  const field = object(value)[key];
-  return typeof field === 'number' ? field : 0;
 }
 
 export function resultSchemaPath(action: DeliveryActionRecord): string {

@@ -1,13 +1,13 @@
 import { realpathSync } from 'node:fs';
 
-import { repositoryCheckoutFacts } from '@telesarch/git';
+import { repositoryCheckoutFacts } from '@big-plan/git';
 import {
   inspectRepositoryAuthority,
   openRepositoryAuthority,
   readActiveDeliveries,
   readDelivery,
   type RepositoryAuthorityDatabase,
-} from '@telesarch/repository-authority';
+} from '@big-plan/repository-authority';
 
 import { RepositoryToolingInputError } from './repository-tooling-errors.js';
 

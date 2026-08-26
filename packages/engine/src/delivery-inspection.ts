@@ -17,13 +17,13 @@ import {
   type ExternalEffectRecord,
   type RepositoryAuthorityConfiguration,
   type RepositoryAuthorityDatabase,
-} from '@telesarch/repository-authority';
+} from '@big-plan/repository-authority';
 import {
   changedPaths,
   currentBranch,
   currentCommit,
   repositoryCheckoutFacts,
-} from '@telesarch/git';
+} from '@big-plan/git';
 
 import { DeliveryLifecycle } from './delivery-lifecycle.js';
 import { DeliveryLifecycleError } from './delivery-lifecycle-error.js';

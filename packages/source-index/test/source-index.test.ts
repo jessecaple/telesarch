@@ -39,7 +39,7 @@ describe('source index', () => {
     );
 
   const createRepository = (): string => {
-    const repository = mkdtempSync(join(tmpdir(), 'telesarch-source-index-'));
+    const repository = mkdtempSync(join(tmpdir(), 'big-plan-source-index-'));
     cleanups.push(() => rmSync(repository, { recursive: true, force: true }));
     git(repository, 'init', '-q');
     writeFileSync(
@@ -248,7 +248,7 @@ describe('source index', () => {
     refreshSourceIndex(first, repository);
     const before = readSourceIndexBreakdown(first);
     first.close();
-    rmSync(join(repository, '.git/telesarch'), {
+    rmSync(join(repository, '.git/big-plan'), {
       recursive: true,
       force: true,
     });

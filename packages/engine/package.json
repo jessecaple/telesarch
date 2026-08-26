@@ -1,5 +1,5 @@
 {
-  "name": "@telesarch/engine",
+  "name": "@big-plan/engine",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -21,14 +21,13 @@
     ]
   },
   "dependencies": {
-    "@telesarch/agent-contracts": "workspace:*",
-    "@telesarch/code-context": "workspace:*",
-    "@telesarch/git": "workspace:*",
-    "@telesarch/github": "workspace:*",
-    "@telesarch/repository-authority": "workspace:*",
-    "@telesarch/repository-tooling": "workspace:*",
-    "@telesarch/source-index": "workspace:*",
-    "@telesarch/storybook": "workspace:*",
+    "@big-plan/agent-contracts": "workspace:*",
+    "@big-plan/code-context": "workspace:*",
+    "@big-plan/git": "workspace:*",
+    "@big-plan/github": "workspace:*",
+    "@big-plan/repository-authority": "workspace:*",
+    "@big-plan/repository-tooling": "workspace:*",
+    "@big-plan/source-index": "workspace:*",
     "ajv": "8.20.0"
   }
 }

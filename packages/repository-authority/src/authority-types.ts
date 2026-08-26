@@ -1,17 +1,14 @@
 export type RepositoryLifecycle = 'pre-production' | 'maintained';
-export type RepositoryDevelopmentMode = 'standard' | 'react-storybook';
 
 export interface RepositoryAuthorityConfiguration {
   readonly revision: number;
   readonly lifecycle: RepositoryLifecycle;
-  readonly developmentMode: RepositoryDevelopmentMode;
   readonly verificationCommands: readonly string[];
   readonly updatedAtMs: number;
 }
 
 export interface RepositoryAuthorityConfigurationInput {
   readonly lifecycle: RepositoryLifecycle;
-  readonly developmentMode: RepositoryDevelopmentMode;
   readonly verificationCommands: readonly string[];
   readonly occurredAtMs: number;
 }

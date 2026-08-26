@@ -5,8 +5,8 @@ import {
   readDelivery,
   type DeliveryRecord,
   type RepositoryAuthorityDatabase,
-} from '@telesarch/repository-authority';
-import { RepositoryToolManager } from '@telesarch/repository-tooling';
+} from '@big-plan/repository-authority';
+import { RepositoryToolManager } from '@big-plan/repository-tooling';
 import {
   changedPaths,
   changedPathsBetween,
@@ -22,7 +22,7 @@ import {
   resolveCommit,
   synchronizeDeliveryBranch,
   worktreeFingerprint,
-} from '@telesarch/git';
+} from '@big-plan/git';
 
 import { DeliveryGitHandoffError } from './delivery-git-handoff-error.js';
 import { DeliveryGitCleanup } from './delivery-git-cleanup.js';
@@ -89,7 +89,7 @@ export class DeliveryGitHandoff {
     const baseCommit = resolveCommit(this.primaryCheckout, primaryBranch);
     const suffix = shortHash(intent.deliveryId);
     const name = slug(intent.title);
-    const branchName = `telesarch/${name}-${suffix}`;
+    const branchName = `big-plan/${name}-${suffix}`;
     const worktreePath = join(
       checkout.rootDirectory,
       '.worktrees',

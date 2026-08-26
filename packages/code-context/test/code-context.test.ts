@@ -14,7 +14,7 @@ import {
   openSourceIndexDatabase,
   refreshSourceIndex,
   type SourceIndexDatabase,
-} from '@telesarch/source-index';
+} from '@big-plan/source-index';
 
 import {
   findCodePrecedents,
@@ -36,7 +36,7 @@ describe('code context projections', () => {
     repository: string;
     index: SourceIndexDatabase;
   } => {
-    const repository = mkdtempSync(join(tmpdir(), 'telesarch-code-context-'));
+    const repository = mkdtempSync(join(tmpdir(), 'big-plan-code-context-'));
     cleanups.push(() => rmSync(repository, { recursive: true, force: true }));
     const git = (...args: string[]) =>
       execFileSync(

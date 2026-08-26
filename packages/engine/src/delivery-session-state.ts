@@ -1,7 +1,7 @@
 import type {
   DeliveryActionRecord,
   DeliveryRecord,
-} from '@telesarch/repository-authority';
+} from '@big-plan/repository-authority';
 
 import type { DeliveryRoleAssignment } from './delivery-role-assignment.js';
 import type { DeliveryNextAction } from './delivery-lifecycle-types.js';
@@ -57,9 +57,7 @@ export function userState(action: DeliveryActionRecord): DeliverySessionState {
     message:
       action.kind === 'manual-test'
         ? `Please test: ${stringList(input.tests).join('; ')}`
-        : action.kind === 'visual-review'
-          ? 'Please review the completed interface.'
-          : String(input.question ?? 'A decision is required.'),
+        : String(input.question ?? 'A decision is required.'),
     action,
   };
 }

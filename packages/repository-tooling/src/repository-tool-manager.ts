@@ -6,7 +6,7 @@ import {
   readRunningDeliveryProcesses,
   recordDeliveryProcess,
   stopDeliveryProcess,
-} from '@telesarch/repository-authority';
+} from '@big-plan/repository-authority';
 
 import type {
   RepositoryProcessCommand,

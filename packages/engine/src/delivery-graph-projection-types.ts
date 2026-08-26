@@ -2,7 +2,7 @@ import type {
   DeliveryActionRecord,
   DeliveryNodeContract,
   DeliveryNodeState,
-} from '@telesarch/repository-authority';
+} from '@big-plan/repository-authority';
 
 export interface BoundedDeliveryPage<T> {
   readonly items: readonly T[];

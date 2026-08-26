@@ -1,5 +1,5 @@
 {
-  "name": "@telesarch/code-context",
+  "name": "@big-plan/code-context",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -21,6 +21,6 @@
     ]
   },
   "dependencies": {
-    "@telesarch/source-index": "workspace:*"
+    "@big-plan/source-index": "workspace:*"
   }
 }

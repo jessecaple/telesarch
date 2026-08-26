@@ -11,7 +11,7 @@ export class SqliteUnrecognizedDatabaseError extends Error {
   readonly code = 'sqlite-database-unrecognized';
 
   constructor() {
-    super('The SQLite file is not an empty or recognized Telesarch database.');
+    super('The SQLite file is not an empty or recognized Big Plan database.');
     this.name = 'SqliteUnrecognizedDatabaseError';
   }
 }

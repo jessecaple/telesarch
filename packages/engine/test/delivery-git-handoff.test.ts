@@ -1,9 +1,9 @@
 import { existsSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { readDelivery } from '@telesarch/repository-authority';
-import { GitHubRequestError } from '@telesarch/github';
-import { currentCommit, worktreeFingerprint } from '@telesarch/git';
+import { readDelivery } from '@big-plan/repository-authority';
+import { GitHubRequestError } from '@big-plan/github';
+import { currentCommit, worktreeFingerprint } from '@big-plan/git';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import {

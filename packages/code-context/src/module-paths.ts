@@ -1,7 +1,7 @@
 import {
   readSourceFile,
   type SourceIndexDatabase,
-} from '@telesarch/source-index';
+} from '@big-plan/source-index';
 
 export interface ModulePathResult {
   /** Import chains from the start file to the target, shortest first. */

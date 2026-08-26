@@ -9,13 +9,13 @@ import {
   updateDeliveryStatus,
   type DeliveryRecord,
   type OpenedRepositoryAuthority,
-} from '@telesarch/repository-authority';
+} from '@big-plan/repository-authority';
 import type {
   GitHubPullRequest,
   GitHubPullRequestStatus,
   GitHubRepositoryReference,
-} from '@telesarch/github';
-import { currentCommit, worktreeFingerprint } from '@telesarch/git';
+} from '@big-plan/github';
+import { currentCommit, worktreeFingerprint } from '@big-plan/git';
 import { vi, type Mock } from 'vitest';
 
 import {
@@ -26,7 +26,7 @@ import {
 } from '../src/index.js';
 
 export class DeliveryGitHandoffFixture {
-  readonly directory = mkdtempSync(join(tmpdir(), 'telesarch-handoff-'));
+  readonly directory = mkdtempSync(join(tmpdir(), 'big-plan-handoff-'));
   readonly repository = join(this.directory, 'repository');
   readonly authority: OpenedRepositoryAuthority;
   readonly stopDelivery = vi.fn<DeliveryProcessStopper['stopDelivery']>();
@@ -43,7 +43,7 @@ export class DeliveryGitHandoffFixture {
 
   constructor(github = false) {
     git(this.directory, 'init', '-q', '--initial-branch=main', this.repository);
-    git(this.repository, 'config', 'user.name', 'Telesarch Test');
+    git(this.repository, 'config', 'user.name', 'Big Plan Test');
     git(this.repository, 'config', 'user.email', 'test@example.test');
     writeFileSync(join(this.repository, 'README.md'), '# Test\n');
     git(this.repository, 'add', 'README.md');

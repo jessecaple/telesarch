@@ -9,16 +9,14 @@ import {
   updateRepositoryConfiguration,
   type RepositoryAuthorityConfiguration,
   type RepositoryAuthorityConfigurationInput,
-} from '@telesarch/repository-authority';
+} from '@big-plan/repository-authority';
 
 export interface RepositorySetupInspection {
   readonly initialized: boolean;
   readonly repositoryRoot: string;
   readonly detectedVerificationCommands: readonly string[];
-  readonly storybookDetected: boolean;
   readonly choicesRequired: readonly (
     | 'verificationCommands'
-    | 'developmentMode'
     | 'lifecycle'
   )[];
   readonly configuration?: RepositoryAuthorityConfiguration;
@@ -35,7 +33,6 @@ export function inspectRepositorySetup(
         initialized: true,
         repositoryRoot: location.checkout.rootDirectory,
         detectedVerificationCommands: [],
-        storybookDetected: false,
         choicesRequired: [],
         configuration: readRepositoryConfiguration(authority.database),
       };
@@ -48,11 +45,7 @@ export function inspectRepositorySetup(
     initialized: false,
     repositoryRoot: location.checkout.rootDirectory,
     detectedVerificationCommands: detectedCommands(manifest),
-    storybookDetected: detectsStorybook(
-      location.checkout.rootDirectory,
-      manifest,
-    ),
-    choicesRequired: ['verificationCommands', 'developmentMode', 'lifecycle'],
+    choicesRequired: ['verificationCommands', 'lifecycle'],
   };
 }
 
@@ -110,19 +103,6 @@ function detectedCommands(
     .map((name) => `pnpm ${name}`);
 }
 
-function detectsStorybook(
-  root: string,
-  manifest: Record<string, unknown> | undefined,
-): boolean {
-  if (existsSync(join(root, '.storybook'))) return true;
-  const dependencies = {
-    ...(object(manifest?.dependencies) ? manifest.dependencies : {}),
-    ...(object(manifest?.devDependencies) ? manifest.devDependencies : {}),
-  };
-  return Object.keys(dependencies).some(
-    (name) => name === 'storybook' || name.startsWith('@storybook/'),
-  );
-}
 
 function object(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === 'object' && !Array.isArray(value);

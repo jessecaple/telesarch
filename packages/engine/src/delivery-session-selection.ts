@@ -5,8 +5,8 @@ import {
   readDelivery,
   type DeliveryRecord,
   type RepositoryAuthorityDatabase,
-} from '@telesarch/repository-authority';
-import { repositoryCheckoutFacts } from '@telesarch/git';
+} from '@big-plan/repository-authority';
+import { repositoryCheckoutFacts } from '@big-plan/git';
 
 import { DeliveryLifecycleError } from './delivery-lifecycle-error.js';
 

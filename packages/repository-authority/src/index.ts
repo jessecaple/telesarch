@@ -22,7 +22,6 @@ export type {
   ExternalEffectStatus,
   RepositoryAuthorityConfiguration,
   RepositoryAuthorityConfigurationInput,
-  RepositoryDevelopmentMode,
   RepositoryLifecycle,
 } from './authority-types.js';
 export {
@@ -35,6 +34,7 @@ export {
   type RepositoryAuthorityLocation,
 } from './repository-authority.js';
 export {
+  createRepositoryConfiguration,
   readRepositoryConfiguration,
   updateRepositoryConfiguration,
 } from './repository-configuration.js';

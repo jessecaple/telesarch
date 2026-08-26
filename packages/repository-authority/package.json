@@ -1,5 +1,5 @@
 {
-  "name": "@telesarch/repository-authority",
+  "name": "@big-plan/repository-authority",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -21,8 +21,8 @@
     ]
   },
   "dependencies": {
-    "@telesarch/git": "workspace:*",
-    "@telesarch/sqlite": "workspace:*",
+    "@big-plan/git": "workspace:*",
+    "@big-plan/sqlite": "workspace:*",
     "better-sqlite3": "catalog:"
   },
   "devDependencies": {

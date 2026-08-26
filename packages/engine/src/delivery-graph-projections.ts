@@ -7,7 +7,7 @@ import {
   type DeliveryNodeState,
   type DeliveryRecord,
   type RepositoryAuthorityDatabase,
-} from '@telesarch/repository-authority';
+} from '@big-plan/repository-authority';
 
 import { openActionsAfterLatestAppliedRevision } from './delivery-action-scope.js';
 import { DeliveryLifecycleError } from './delivery-lifecycle-error.js';

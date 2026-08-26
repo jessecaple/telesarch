@@ -2,7 +2,7 @@ import {
   listSourceFiles,
   type SourceFileCategory,
   type SourceIndexDatabase,
-} from '@telesarch/source-index';
+} from '@big-plan/source-index';
 
 export interface MeasuredPattern {
   readonly pattern: string;

@@ -1,4 +1,4 @@
-import type { SqliteMigration } from '@telesarch/sqlite';
+import type { SqliteMigration } from '@big-plan/sqlite';
 
 export const repositoryAuthoritySchema: SqliteMigration = {
   version: 1,
@@ -9,9 +9,6 @@ export const repositoryAuthoritySchema: SqliteMigration = {
     revision INTEGER NOT NULL CHECK (revision > 0),
     lifecycle TEXT NOT NULL CHECK (
       lifecycle IN ('pre-production', 'maintained')
-    ),
-    development_mode TEXT NOT NULL CHECK (
-      development_mode IN ('standard', 'react-storybook')
     ),
     verification_commands_json TEXT NOT NULL CHECK (
       json_valid(verification_commands_json) AND

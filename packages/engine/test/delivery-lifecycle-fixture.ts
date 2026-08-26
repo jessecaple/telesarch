@@ -7,7 +7,7 @@ import {
   initializeRepositoryAuthority,
   type DeliveryDependency,
   type RepositoryAuthorityDatabase,
-} from '@telesarch/repository-authority';
+} from '@big-plan/repository-authority';
 
 import { DeliveryLifecycle } from '../src/delivery-lifecycle.js';
 import type {
@@ -17,7 +17,7 @@ import type {
 } from '../src/delivery-lifecycle-types.js';
 
 export class DeliveryLifecycleFixture {
-  readonly directory = mkdtempSync(join(tmpdir(), 'telesarch-lifecycle-'));
+  readonly directory = mkdtempSync(join(tmpdir(), 'big-plan-lifecycle-'));
   readonly repository = join(this.directory, 'repository');
   readonly authority: RepositoryAuthorityDatabase;
   readonly lifecycle: DeliveryLifecycle;
@@ -26,8 +26,8 @@ export class DeliveryLifecycleFixture {
 
   constructor() {
     git(this.directory, 'init', '--initial-branch=main', this.repository);
-    git(this.repository, 'config', 'user.name', 'Telesarch Test');
-    git(this.repository, 'config', 'user.email', 'telesarch@example.test');
+    git(this.repository, 'config', 'user.name', 'Big Plan Test');
+    git(this.repository, 'config', 'user.email', 'big-plan@example.test');
     writeFileSync(join(this.repository, 'README.md'), '# Test\n');
     git(this.repository, 'add', 'README.md');
     git(this.repository, 'commit', '-m', 'Initial commit');

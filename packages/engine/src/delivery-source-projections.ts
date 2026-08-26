@@ -6,7 +6,7 @@ import {
   readModulePaths,
   readRepositoryOrientation,
   readVerificationContext,
-} from '@telesarch/code-context';
+} from '@big-plan/code-context';
 import {
   openSourceIndexDatabase,
   readSourceIndexEvidence,
@@ -15,7 +15,7 @@ import {
   SourceIndexStaleError,
   type SourceFileCategory,
   type SourceIndexDatabase,
-} from '@telesarch/source-index';
+} from '@big-plan/source-index';
 
 export type DeliverySourceSnapshot = 'refresh-on-change' | 'pinned';
 export type DeliverySourceView =

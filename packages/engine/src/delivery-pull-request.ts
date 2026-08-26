@@ -7,7 +7,7 @@ import {
   startExternalEffectAttempt,
   type ExternalEffectRecord,
   type RepositoryAuthorityDatabase,
-} from '@telesarch/repository-authority';
+} from '@big-plan/repository-authority';
 import {
   GitHubCli,
   GitHubRequestError,
@@ -16,12 +16,12 @@ import {
   type GitHubPullRequest,
   type GitHubPullRequestStatus,
   type GitHubRepositoryReference,
-} from '@telesarch/github';
+} from '@big-plan/github';
 import {
   pushBranch,
   readRemoteBranchCommit,
   readRemotePushUrl,
-} from '@telesarch/git';
+} from '@big-plan/git';
 
 import { DeliveryGitHandoffError } from './delivery-git-handoff-error.js';
 import {

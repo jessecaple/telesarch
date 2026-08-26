@@ -1,0 +1,1 @@
+Implement every completion criterion of the assigned leaf at the narrowest owning boundary. Add focused coverage for owned observable behavior and meaningful failures. Return `completed` with only manual tests that automated checks cannot establish. Return `revision-required` only when the delivery contract must change before correct implementation is possible.

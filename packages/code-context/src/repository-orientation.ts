@@ -8,7 +8,7 @@ import {
   type SourceIndexBreakdown,
   type SourceIndexDatabase,
   type SourceIndexEvidence,
-} from '@telesarch/source-index';
+} from '@big-plan/source-index';
 
 export interface OrientationPackage {
   readonly name: string;

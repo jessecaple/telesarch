@@ -3,8 +3,8 @@ import {
   readExternalEffect,
   type ExternalEffectRecord,
   type RepositoryAuthorityDatabase,
-} from '@telesarch/repository-authority';
-import type { GitHubPullRequest } from '@telesarch/github';
+} from '@big-plan/repository-authority';
+import type { GitHubPullRequest } from '@big-plan/github';
 
 import { DeliveryGitHandoffError } from './delivery-git-handoff-error.js';
 import type { DeliveryHandoffResult } from './delivery-git-handoff-types.js';

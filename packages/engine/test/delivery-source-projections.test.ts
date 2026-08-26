@@ -48,7 +48,7 @@ describe('delivery source projections', () => {
 });
 
 function repository(roots: string[]): string {
-  const root = mkdtempSync(join(tmpdir(), 'telesarch-source-projection-'));
+  const root = mkdtempSync(join(tmpdir(), 'big-plan-source-projection-'));
   roots.push(root);
   mkdirSync(join(root, 'src'));
   writeFileSync(
@@ -57,8 +57,8 @@ function repository(roots: string[]): string {
   );
   writeFileSync(join(root, 'src/index.ts'), 'export const value = 1;\n');
   git(root, 'init', '-b', 'main');
-  git(root, 'config', 'user.name', 'Telesarch Test');
-  git(root, 'config', 'user.email', 'test@telesarch.local');
+  git(root, 'config', 'user.name', 'Big Plan Test');
+  git(root, 'config', 'user.email', 'test@big-plan.local');
   git(root, 'add', '.');
   git(root, 'commit', '-m', 'Initial fixture');
   return root;

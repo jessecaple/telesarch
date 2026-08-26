@@ -1,0 +1,111 @@
+import type { Agent } from '@deepseek-ai/dsh-agent';
+import type { JobId, JobRegistry } from '@deepseek-ai/dsh-jobs';
+
+import { DeliveryRunner } from './delivery-runner.js';
+
+export interface DeliveryJobRequest {
+  readonly workingDirectory: string;
+  readonly contractsRoot: string;
+  readonly deliveryId: string;
+  readonly parent: Agent;
+  readonly provider: string;
+}
+
+declare module '@deepseek-ai/dsh-jobs' {
+  interface JobKindMap {
+    bigPlan: 'big-plan';
+  }
+}
+
+/** Own process-local jobs while SQLite owns resumable delivery state. */
+export class DeliveryJobManager {
+  private readonly activeDeliveries = new Set<string>();
+  private readonly activeJobs = new Set<{
+    readonly controller: AbortController;
+    readonly done: Promise<unknown>;
+  }>();
+
+  constructor(
+    private readonly jobs: JobRegistry,
+    private readonly runner: DeliveryRunner,
+  ) {}
+
+  start(request: DeliveryJobRequest): JobId {
+    if (this.activeDeliveries.has(request.deliveryId)) {
+      throw new Error('Big Plan delivery already has an active job.');
+    }
+    this.activeDeliveries.add(request.deliveryId);
+    const abort = new AbortController();
+
+    try {
+      return this.jobs.start({
+        kind: 'big-plan',
+        label: 'Big Plan delivery ' + request.deliveryId,
+        owner: request.parent,
+        outputLimitBytes: 50_000,
+        run: () => {
+          const done = this.run(request, abort.signal);
+          const active = { controller: abort, done };
+          this.activeJobs.add(active);
+          void done.then(
+            () => this.activeJobs.delete(active),
+            () => this.activeJobs.delete(active),
+          );
+          return {
+            cancel: (reason?: string) =>
+              abort.abort(reason ?? 'Big Plan job cancelled.'),
+            done,
+          };
+        },
+      });
+    } catch (error) {
+      this.activeDeliveries.delete(request.deliveryId);
+      throw error;
+    }
+  }
+
+  async dispose(): Promise<void> {
+    const active = [...this.activeJobs];
+    for (const job of active) {
+      job.controller.abort('Big Plan plugin unloaded.');
+    }
+    await Promise.all(active.map((job) => job.done));
+  }
+
+  private async run(
+    request: DeliveryJobRequest,
+    signal: AbortSignal,
+  ): Promise<{
+    status: 'completed' | 'killed' | 'failed';
+    detail: string;
+    output: string;
+  }> {
+    try {
+      const result = await this.runner.run({ ...request, signal });
+      return {
+        status: 'completed',
+        detail: result.status,
+        output: JSON.stringify(result),
+      };
+    } catch (error) {
+      if (signal.aborted) {
+        return {
+          status: 'killed',
+          detail: 'cancelled',
+          output: renderError(signal.reason),
+        };
+      }
+      return {
+        status: 'failed',
+        detail: 'delivery failed',
+        output: renderError(error),
+      };
+    } finally {
+      this.activeDeliveries.delete(request.deliveryId);
+    }
+  }
+}
+
+function renderError(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}

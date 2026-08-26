@@ -10,7 +10,7 @@ import {
   type SourceFileRecord,
   type SourceIndexDatabase,
   type SourceIndexEvidence,
-} from '@telesarch/source-index';
+} from '@big-plan/source-index';
 
 export interface CodeEntityContext {
   readonly evidence?: SourceIndexEvidence;

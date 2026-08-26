@@ -13,7 +13,6 @@ import {
   inspectRepositorySetup,
 } from '../src/index.js';
 import {
-  assignmentSource,
   child,
   git,
   intent,
@@ -41,19 +40,16 @@ describe('delivery session workflow', () => {
         test: 'vitest run',
         lint: 'eslint .',
       },
-      devDependencies: { '@storybook/react-vite': '1.0.0' },
     });
 
     expect(inspectRepositorySetup(repository)).toMatchObject({
       initialized: false,
       detectedVerificationCommands: ['pnpm build', 'pnpm test', 'pnpm lint'],
-      storybookDetected: true,
-      choicesRequired: ['verificationCommands', 'developmentMode', 'lifecycle'],
+      choicesRequired: ['verificationCommands', 'lifecycle'],
     });
 
     initializeRepositorySession(repository, {
       lifecycle: 'pre-production',
-      developmentMode: 'react-storybook',
       verificationCommands: ['pnpm test'],
     });
 
@@ -61,7 +57,6 @@ describe('delivery session workflow', () => {
       initialized: true,
       configuration: {
         lifecycle: 'pre-production',
-        developmentMode: 'react-storybook',
         verificationCommands: ['pnpm test'],
       },
     });
@@ -71,7 +66,6 @@ describe('delivery session workflow', () => {
     const repository = createRepository();
     initializeRepositorySession(repository, {
       lifecycle: 'pre-production',
-      developmentMode: 'react-storybook',
       verificationCommands: [],
     });
     const session = new DeliverySessionWorkflow(repository, contractsRoot);
@@ -157,29 +151,6 @@ describe('delivery session workflow', () => {
       status: 'completed',
       manualTests: [],
     });
-    const implementationSource = assignmentSource(implementationAssignment);
-
-    const composition = await session.nextAction();
-    const compositionAssignment = requireAssignment(composition);
-    expect(compositionAssignment).toMatchObject({
-      role: 'storybook-composition',
-      call: 'storybook-composition-interface',
-      workspaceAccess: 'read-write',
-      input: {
-        source: {
-          startingCommit: implementationSource.startingCommit,
-          changedPaths: ['greeting.tsx'],
-        },
-      },
-    });
-    const composer = new DeliveryRoleWorkflow(
-      compositionAssignment.workingDirectory,
-      contractsRoot,
-    );
-    await composer.submitResult(compositionAssignment.subjectNodeId, {
-      status: 'completed',
-    });
-
     const review = await session.nextAction();
     const reviewAssignment = requireAssignment(review);
     expect(reviewAssignment).toMatchObject({
@@ -197,16 +168,6 @@ describe('delivery session workflow', () => {
     });
 
     await expect(session.nextAction()).resolves.toMatchObject({
-      state: 'Needs your input',
-      message: 'Please review the completed interface.',
-      action: {
-        kind: 'visual-review',
-        input: {
-          sourceActionIds: [expect.any(String)],
-        },
-      },
-    });
-    expect(session.approveVisualReview()).toMatchObject({
       state: 'Complete',
       message: 'The delivery is ready for handoff.',
     });
@@ -228,7 +189,6 @@ describe('delivery session workflow', () => {
     const repository = createRepository();
     initializeRepositorySession(repository, {
       lifecycle: 'pre-production',
-      developmentMode: 'standard',
       verificationCommands: [],
     });
     const creatingSession = new DeliverySessionWorkflow(
@@ -280,7 +240,6 @@ describe('delivery session workflow', () => {
     const repository = createRepository();
     initializeRepositorySession(repository, {
       lifecycle: 'pre-production',
-      developmentMode: 'standard',
       verificationCommands: [],
     });
     const creatingSession = new DeliverySessionWorkflow(
@@ -306,7 +265,6 @@ describe('delivery session workflow', () => {
     const repository = createRepository();
     initializeRepositorySession(repository, {
       lifecycle: 'pre-production',
-      developmentMode: 'standard',
       verificationCommands: [],
     });
     const session = new DeliverySessionWorkflow(repository, contractsRoot);
@@ -347,11 +305,11 @@ describe('delivery session workflow', () => {
   });
 
   function createRepository(manifest?: Record<string, unknown>): string {
-    const directory = mkdtempSync(join(tmpdir(), 'telesarch-session-'));
+    const directory = mkdtempSync(join(tmpdir(), 'big-plan-session-'));
     directories.push(directory);
     const repository = join(directory, 'repository');
     git(directory, 'init', '-q', '--initial-branch=main', repository);
-    git(repository, 'config', 'user.name', 'Telesarch Test');
+    git(repository, 'config', 'user.name', 'Big Plan Test');
     git(repository, 'config', 'user.email', 'test@example.test');
     writeFile(repository, 'README.md', '# Test\n');
     if (manifest !== undefined) {

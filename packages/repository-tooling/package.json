@@ -1,5 +1,5 @@
 {
-  "name": "@telesarch/repository-tooling",
+  "name": "@big-plan/repository-tooling",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -21,7 +21,7 @@
     ]
   },
   "dependencies": {
-    "@telesarch/git": "workspace:*",
-    "@telesarch/repository-authority": "workspace:*"
+    "@big-plan/git": "workspace:*",
+    "@big-plan/repository-authority": "workspace:*"
   }
 }

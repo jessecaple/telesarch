@@ -7,13 +7,11 @@ import {
   readDeliveryActions,
   type DeliveryRecord,
   type RepositoryAuthorityDatabase,
-} from '@telesarch/repository-authority';
+} from '@big-plan/repository-authority';
 import {
-  currentCommit,
   listRepositoryWorktrees,
   repositoryCheckoutFacts,
-} from '@telesarch/git';
-import { StorybookProcessManager } from '@telesarch/storybook';
+} from '@big-plan/git';
 
 import { DeliveryGitHandoff } from './delivery-git-handoff.js';
 import { openActionsAfterLatestAppliedRevision } from './delivery-action-scope.js';
@@ -38,7 +36,6 @@ export type { DeliverySessionState } from './delivery-session-state.js';
 
 export class DeliverySessionWorkflow {
   private selectedDeliveryId?: string;
-  private readonly storybook = new StorybookProcessManager();
 
   constructor(
     private readonly workingDirectory: string,
@@ -127,24 +124,6 @@ export class DeliverySessionWorkflow {
     );
   }
 
-  approveVisualReview(): DeliverySessionState {
-    return this.completeWaiting('visual-review', { status: 'approved' });
-  }
-
-  requestVisualAdjustment(feedback: string): DeliverySessionState {
-    return this.withAuthority(({ database }) => {
-      const delivery = this.requireSelected(database);
-      new DeliveryLifecycle(database).startVisualAdjustment({
-        deliveryId: delivery.deliveryId,
-        actionId: randomUUID(),
-        feedback,
-        baseCommit: currentCommit(delivery.worktreePath),
-        occurredAtMs: Date.now(),
-      });
-      return this.projectState(database, this.requireSelected(database));
-    });
-  }
-
   requestRevision(nodeId: string, summary: string): DeliverySessionState {
     return this.withAuthority(({ database }) => {
       const delivery = this.requireSelected(database);
@@ -166,16 +145,6 @@ export class DeliverySessionWorkflow {
         delivery.deliveryId,
       );
     });
-  }
-
-  async storybookPreview(projectId?: string) {
-    const authority = openRepositoryAuthority(this.workingDirectory);
-    try {
-      const delivery = this.requireSelected(authority.database);
-      return this.storybook.ensurePreview(delivery.worktreePath, projectId);
-    } finally {
-      authority.database.close();
-    }
   }
 
   async handoff(
@@ -258,7 +227,7 @@ export class DeliverySessionWorkflow {
   }
 
   close(): Promise<void> {
-    return this.storybook.stopAll();
+    return Promise.resolve();
   }
 
   async clearDeliveries(): Promise<readonly DeliveryCleanupResult[]> {
@@ -363,7 +332,6 @@ export class DeliverySessionWorkflow {
     const authority = openRepositoryAuthority(this.workingDirectory);
     try {
       const delivery = this.requireSelected(authority.database);
-      await this.storybook.stopWorktree(delivery.worktreePath);
       return await operation(
         new DeliveryGitHandoff(
           authority.database,

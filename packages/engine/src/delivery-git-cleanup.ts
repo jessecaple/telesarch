@@ -5,7 +5,7 @@ import {
   readDelivery,
   type DeliveryRecord,
   type RepositoryAuthorityDatabase,
-} from '@telesarch/repository-authority';
+} from '@big-plan/repository-authority';
 import {
   changedPaths,
   commitAll,
@@ -17,7 +17,7 @@ import {
   removeManagedWorktreeCheckout,
   repositoryHasCommit,
   resolveCommit,
-} from '@telesarch/git';
+} from '@big-plan/git';
 
 import { DeliveryGitHandoffError } from './delivery-git-handoff-error.js';
 import type {

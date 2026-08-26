@@ -1,16 +1,15 @@
 import type {
   DeliveryActionRecord,
   DeliveryRecord,
-} from '@telesarch/repository-authority';
+} from '@big-plan/repository-authority';
 
 import {
   implementationResult,
   manualTestResult,
-  visualReviewResult,
 } from './delivery-action-results.js';
 
 export interface PendingDeliveryReview {
-  readonly kind: 'manual-test' | 'visual-review';
+  readonly kind: 'manual-test';
   readonly tests: readonly string[];
   readonly sourceActionIds: readonly string[];
 }
@@ -32,16 +31,6 @@ export function pendingDeliveryReview(
   );
   if (sources.length === 0) return undefined;
 
-  const visualSources = sources.filter(
-    (action) => action.kind === 'storybook-composition',
-  );
-  if (visualSources.length > 0) {
-    return {
-      kind: 'visual-review',
-      tests: [],
-      sourceActionIds: visualSources.map((action) => action.actionId),
-    };
-  }
   const tests = new Set<string>();
   for (const source of sources) {
     if (source.kind !== 'implementation') continue;
@@ -58,7 +47,6 @@ export function pendingDeliveryReview(
 }
 
 function reviewSource(action: DeliveryActionRecord): boolean {
-  if (action.kind === 'storybook-composition') return true;
   if (action.kind !== 'implementation') return false;
   const result = implementationResult(action);
   return result.status === 'completed' && (result.manualTests?.length ?? 0) > 0;
@@ -80,13 +68,10 @@ function coveredActionIds(
 }
 
 function reviewApproved(action: DeliveryActionRecord): boolean {
-  if (action.kind === 'manual-test') {
-    return manualTestResult(action).status === 'passed';
-  }
-  if (action.kind === 'visual-review') {
-    return visualReviewResult(action).status === 'approved';
-  }
-  return false;
+  return (
+    action.kind === 'manual-test' &&
+    manualTestResult(action).status === 'passed'
+  );
 }
 
 function inputStrings(

@@ -1,1 +1,0 @@
-Create or update the smallest useful stories that exercise the assigned completed interface behavior. Return `completed` when the stories represent the behavior and its supported states. Return `revision-required` only when product behavior must change before truthful stories are possible.

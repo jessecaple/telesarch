@@ -1,7 +1,7 @@
 import type {
   DeliveryGraph,
   DeliveryRecord,
-} from '@telesarch/repository-authority';
+} from '@big-plan/repository-authority';
 
 export function deliveryNodeId(deliveryId: string, proposedId: string): string {
   const prefix = `${deliveryId}:`;

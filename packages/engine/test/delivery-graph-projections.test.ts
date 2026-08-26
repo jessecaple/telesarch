@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { readDelivery } from '@telesarch/repository-authority';
+import { readDelivery } from '@big-plan/repository-authority';
 
 import { DeliveryGraphProjections } from '../src/delivery-graph-projections.js';
 import { DeliveryLifecycleFixture } from './delivery-lifecycle-fixture.js';

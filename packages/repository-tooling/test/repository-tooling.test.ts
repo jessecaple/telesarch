@@ -8,7 +8,7 @@ import {
   initializeRepositoryAuthority,
   openRepositoryAuthority,
   readRunningDeliveryProcesses,
-} from '@telesarch/repository-authority';
+} from '@big-plan/repository-authority';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import {
@@ -76,7 +76,7 @@ describe('host-native repository tooling', () => {
     const fixture = await deliveryFixture();
     const tools = new RepositoryToolManager({ stopTimeoutMs: 100 });
     const running = await tools.start({
-      purpose: 'storybook',
+      purpose: 'scenario',
       deliveryId: 'delivery:test',
       workingDirectory: fixture.worktree,
       command: [process.execPath, '-e', 'setInterval(() => {}, 1000)'],
@@ -111,7 +111,7 @@ describe('host-native repository tooling', () => {
 
   it('returns the missing executable and command evidence', async () => {
     const repository = await repositoryFixture();
-    const operation = 'telesarch-tool-that-does-not-exist --version';
+    const operation = 'big-plan-tool-that-does-not-exist --version';
     const error = await runRepositoryCommand(
       new RepositoryToolManager(),
       repository,
@@ -119,14 +119,14 @@ describe('host-native repository tooling', () => {
     ).catch((reason: unknown) => reason);
     expect(error).toBeInstanceOf(RepositoryCommandMissingToolError);
     expect(error).toMatchObject({
-      executable: 'telesarch-tool-that-does-not-exist',
+      executable: 'big-plan-tool-that-does-not-exist',
       operation,
       evidence: expect.stringContaining('not found'),
     });
   });
 
   async function repositoryFixture(): Promise<string> {
-    container ??= await mkdtemp(join(tmpdir(), 'telesarch-host-tools-'));
+    container ??= await mkdtemp(join(tmpdir(), 'big-plan-host-tools-'));
     const repository = join(container, 'repository');
     execFileSync('git', ['init', '-q', '--initial-branch=main', repository]);
     execFileSync('git', ['config', 'user.name', 'Test'], { cwd: repository });
@@ -152,7 +152,6 @@ describe('host-native repository tooling', () => {
     );
     const authority = initializeRepositoryAuthority(repository, {
       lifecycle: 'pre-production',
-      developmentMode: 'standard',
       verificationCommands: ['pnpm test'],
       occurredAtMs: 1,
     });

@@ -22,7 +22,7 @@ export default [
       '@nx/enforce-module-boundaries': [
         'error',
         {
-          allow: ['^@telesarch/cli$'],
+          allow: ['^@big-plan/cli$'],
           depConstraints: [
             {
               sourceTag: 'type:app',

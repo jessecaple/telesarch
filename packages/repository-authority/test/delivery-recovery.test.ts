@@ -78,18 +78,18 @@ describe('delivery recovery', () => {
   it('keeps processes delivery-scoped and disposable', () => {
     const database = authority();
     recordDeliveryProcess(database, {
-      processId: 'storybook',
+      processId: 'scenario',
       deliveryId: 'first',
-      kind: 'storybook',
+      kind: 'scenario',
       systemProcessId: 123,
       workingDirectory: '/worktrees/first',
       metadata: { port: 6006 },
       occurredAtMs: 2,
     });
     expect(readRunningDeliveryProcesses(database, 'first')).toHaveLength(1);
-    expect(stopDeliveryProcess(database, 'storybook', 4).stoppedAtMs).toBe(4);
+    expect(stopDeliveryProcess(database, 'scenario', 4).stoppedAtMs).toBe(4);
     expect(readDeliveryProcesses(database, 'first')).toMatchObject([
-      { processId: 'storybook', stoppedAtMs: 4 },
+      { processId: 'scenario', stoppedAtMs: 4 },
     ]);
 
     deleteDelivery(database, { deliveryId: 'first', expectedRevision: 1 });

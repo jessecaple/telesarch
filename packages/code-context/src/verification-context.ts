@@ -3,7 +3,7 @@ import {
   readImporterFiles,
   readSourceFile,
   type SourceIndexDatabase,
-} from '@telesarch/source-index';
+} from '@big-plan/source-index';
 
 export interface VerificationContext {
   /** Indexed test files that import one of the subject paths. */

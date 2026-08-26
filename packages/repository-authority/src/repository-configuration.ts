@@ -15,7 +15,6 @@ import {
 interface ConfigurationRow {
   readonly revision: number;
   readonly lifecycle: RepositoryAuthorityConfiguration['lifecycle'];
-  readonly development_mode: RepositoryAuthorityConfiguration['developmentMode'];
   readonly verification_commands_json: string;
   readonly updated_at_ms: number;
 }
@@ -45,13 +44,12 @@ export function createRepositoryConfiguration(
     database
       .prepare(
         `INSERT INTO repository_configuration
-          (singleton, revision, lifecycle, development_mode,
-           verification_commands_json, updated_at_ms)
-         VALUES (1, 1, ?, ?, ?, ?)`,
+          (singleton, revision, lifecycle, verification_commands_json,
+           updated_at_ms)
+         VALUES (1, 1, ?, ?, ?)`,
       )
       .run(
         input.lifecycle,
-        input.developmentMode,
         JSON.stringify(input.verificationCommands),
         input.occurredAtMs,
       );
@@ -72,13 +70,12 @@ export function updateRepositoryConfiguration(
         const result = database
           .prepare(
             `UPDATE repository_configuration
-           SET revision = revision + 1, lifecycle = ?, development_mode = ?,
+           SET revision = revision + 1, lifecycle = ?,
                verification_commands_json = ?, updated_at_ms = ?
            WHERE singleton = 1 AND revision = ?`,
           )
           .run(
             input.lifecycle,
-            input.developmentMode,
             JSON.stringify(input.verificationCommands),
             input.occurredAtMs,
             input.expectedRevision,
@@ -114,7 +111,6 @@ function mapConfiguration(
   return {
     revision: row.revision,
     lifecycle: row.lifecycle,
-    developmentMode: row.development_mode,
     verificationCommands: JSON.parse(
       row.verification_commands_json,
     ) as string[],
@@ -127,7 +123,6 @@ function validateConfiguration(
 ): void {
   if (
     !['pre-production', 'maintained'].includes(input.lifecycle) ||
-    !['standard', 'react-storybook'].includes(input.developmentMode) ||
     !Number.isSafeInteger(input.occurredAtMs) ||
     input.occurredAtMs < 0 ||
     input.verificationCommands.some((command) => command.trim().length === 0)
@@ -139,5 +134,4 @@ function validateConfiguration(
 }
 
 const configurationSelect = `SELECT singleton, revision, lifecycle,
-  development_mode, verification_commands_json, updated_at_ms
-  FROM repository_configuration`;
+  verification_commands_json, updated_at_ms FROM repository_configuration`;

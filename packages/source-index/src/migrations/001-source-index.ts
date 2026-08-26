@@ -1,4 +1,4 @@
-import type { SqliteMigration } from '@telesarch/sqlite';
+import type { SqliteMigration } from '@big-plan/sqlite';
 
 export const sourceIndexSchema: SqliteMigration = {
   version: 1,

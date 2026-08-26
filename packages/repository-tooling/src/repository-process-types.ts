@@ -3,7 +3,6 @@ import type { Readable, Writable } from 'node:stream';
 export type RepositoryProcessPurpose =
   | 'repository-command'
   | 'verification'
-  | 'storybook'
   | 'scenario';
 
 export interface RepositoryProcessIdentity {

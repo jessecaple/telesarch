@@ -24,7 +24,7 @@ export async function commitAll(
 export async function worktreeFingerprint(
   workingDirectory: string,
 ): Promise<string> {
-  const scratch = await mkdtemp(join(tmpdir(), 'telesarch-fingerprint-'));
+  const scratch = await mkdtemp(join(tmpdir(), 'big-plan-fingerprint-'));
   const environment = { GIT_INDEX_FILE: join(scratch, 'index') };
   try {
     await runGit(workingDirectory, ['read-tree', 'HEAD'], environment);

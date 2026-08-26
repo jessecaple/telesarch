@@ -2,7 +2,7 @@ export class RepositoryAuthorityNotInitializedError extends Error {
   readonly code = 'repository-authority-not-initialized';
 
   constructor() {
-    super('Telesarch is not initialized for this repository.');
+    super('Big Plan is not initialized for this repository.');
     this.name = 'RepositoryAuthorityNotInitializedError';
   }
 }
@@ -11,7 +11,7 @@ export class RepositoryAuthorityAlreadyInitializedError extends Error {
   readonly code = 'repository-authority-already-initialized';
 
   constructor() {
-    super('Telesarch is already initialized for this repository.');
+    super('Big Plan is already initialized for this repository.');
     this.name = 'RepositoryAuthorityAlreadyInitializedError';
   }
 }

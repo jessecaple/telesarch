@@ -64,7 +64,7 @@ describe('SQLite database', () => {
   });
 
   it('opens a current database without permitting writes', async () => {
-    const directory = await mkdtemp(join(tmpdir(), 'telesarch-sqlite-'));
+    const directory = await mkdtemp(join(tmpdir(), 'big-plan-sqlite-'));
     directories.push(directory);
     const path = join(directory, 'state.sqlite');
     const input = {

@@ -2,7 +2,7 @@ import {
   readSourceFile,
   searchDeclarations,
   type SourceIndexDatabase,
-} from '@telesarch/source-index';
+} from '@big-plan/source-index';
 
 export interface CodePrecedent {
   /** Always a candidate to inspect, never an owner or a recommendation. */

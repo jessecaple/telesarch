@@ -48,12 +48,11 @@ describe('repository-local authority', () => {
     );
     databases.push(initialized.database);
     expect(initialized.database.path).toBe(
-      join(fixture.repository, '.git', 'telesarch', 'repository.sqlite'),
+      join(fixture.repository, '.git', 'big-plan', 'repository.sqlite'),
     );
     expect(readRepositoryConfiguration(initialized.database)).toMatchObject({
       revision: 1,
       lifecycle: 'pre-production',
-      developmentMode: 'standard',
       verificationCommands: ['pnpm test', 'pnpm typecheck'],
     });
 
@@ -118,7 +117,7 @@ describe('repository-local authority', () => {
     ).toBe(false);
   });
 
-  it('updates only the four workflow settings with revision protection', () => {
+  it('updates workflow settings with revision protection', () => {
     const fixture = createRepositoryFixture();
     directories.push(fixture.directory);
     const opened = initializeRepositoryAuthority(
@@ -131,14 +130,12 @@ describe('repository-local authority', () => {
       updateRepositoryConfiguration(opened.database, {
         expectedRevision: 1,
         lifecycle: 'maintained',
-        developmentMode: 'react-storybook',
         verificationCommands: ['pnpm test'],
         occurredAtMs: 2,
       }),
     ).toEqual({
       revision: 2,
       lifecycle: 'maintained',
-      developmentMode: 'react-storybook',
       verificationCommands: ['pnpm test'],
       updatedAtMs: 2,
     });

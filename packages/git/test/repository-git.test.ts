@@ -11,13 +11,13 @@ import {
 } from '../src/index.js';
 
 it('preserves the first character of a modified tracked path', async () => {
-  const repository = await mkdtemp(join(tmpdir(), 'telesarch-git-'));
+  const repository = await mkdtemp(join(tmpdir(), 'big-plan-git-'));
   await writeFile(join(repository, 'packages.txt'), 'before\n');
   execFileSync('git', ['init', '-q'], { cwd: repository });
-  execFileSync('git', ['config', 'user.email', 'telesarch@example.com'], {
+  execFileSync('git', ['config', 'user.email', 'big-plan@example.com'], {
     cwd: repository,
   });
-  execFileSync('git', ['config', 'user.name', 'Telesarch'], {
+  execFileSync('git', ['config', 'user.name', 'Big Plan'], {
     cwd: repository,
   });
   execFileSync('git', ['add', '.'], { cwd: repository });
@@ -28,16 +28,16 @@ it('preserves the first character of a modified tracked path', async () => {
 });
 
 it('returns usable paths for renames and unusual filenames', async () => {
-  const repository = await mkdtemp(join(tmpdir(), 'telesarch-git-'));
+  const repository = await mkdtemp(join(tmpdir(), 'big-plan-git-'));
   const original = 'old name.txt';
   const renamed = 'new\nname.txt';
   const quoted = 'quote"name.txt';
   await writeFile(join(repository, original), 'before\n');
   execFileSync('git', ['init', '-q'], { cwd: repository });
-  execFileSync('git', ['config', 'user.email', 'telesarch@example.com'], {
+  execFileSync('git', ['config', 'user.email', 'big-plan@example.com'], {
     cwd: repository,
   });
-  execFileSync('git', ['config', 'user.name', 'Telesarch'], {
+  execFileSync('git', ['config', 'user.name', 'Big Plan'], {
     cwd: repository,
   });
   execFileSync('git', ['add', '.'], { cwd: repository });
@@ -51,15 +51,15 @@ it('returns usable paths for renames and unusual filenames', async () => {
 });
 
 it('distinguishes valid, moved, missing, and reused delivery worktrees', async () => {
-  const container = await mkdtemp(join(tmpdir(), 'telesarch-worktree-'));
+  const container = await mkdtemp(join(tmpdir(), 'big-plan-worktree-'));
   const repository = join(container, 'repository');
   const expected = join(repository, '.worktrees', 'delivery');
   const moved = join(repository, '.worktrees', 'moved');
   execFileSync('git', ['init', '-q', '--initial-branch=main', repository]);
-  execFileSync('git', ['config', 'user.email', 'telesarch@example.com'], {
+  execFileSync('git', ['config', 'user.email', 'big-plan@example.com'], {
     cwd: repository,
   });
-  execFileSync('git', ['config', 'user.name', 'Telesarch'], {
+  execFileSync('git', ['config', 'user.name', 'Big Plan'], {
     cwd: repository,
   });
   await writeFile(join(repository, 'README.md'), 'fixture\n');

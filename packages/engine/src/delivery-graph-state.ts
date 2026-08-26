@@ -2,7 +2,7 @@ import type {
   DeliveryActionRecord,
   DeliveryNodeContract,
   DeliveryRecord,
-} from '@telesarch/repository-authority';
+} from '@big-plan/repository-authority';
 
 import { DeliveryLifecycleDataError } from './delivery-lifecycle-error.js';
 

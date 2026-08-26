@@ -2,12 +2,12 @@ import {
   readDelivery,
   readRepositoryConfiguration,
   type RepositoryAuthorityDatabase,
-} from '@telesarch/repository-authority';
+} from '@big-plan/repository-authority';
 import {
   RepositoryToolManager,
   runRepositoryCommand,
-} from '@telesarch/repository-tooling';
-import { worktreeFingerprint } from '@telesarch/git';
+} from '@big-plan/repository-tooling';
+import { worktreeFingerprint } from '@big-plan/git';
 
 import { DeliveryGitHandoff } from './delivery-git-handoff.js';
 import { DeliveryLifecycle } from './delivery-lifecycle.js';

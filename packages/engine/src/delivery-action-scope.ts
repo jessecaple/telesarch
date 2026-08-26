@@ -1,4 +1,4 @@
-import type { DeliveryActionRecord } from '@telesarch/repository-authority';
+import type { DeliveryActionRecord } from '@big-plan/repository-authority';
 
 import { deliveryRevisionResult } from './delivery-action-results.js';
 

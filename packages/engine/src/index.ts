@@ -22,11 +22,6 @@ export {
   DeliveryVerifier,
   type DeliveryVerificationRun,
 } from './delivery-verifier.js';
-export {
-  hostInstallationArtifacts,
-  type HostInstallationArtifact,
-  type SessionHost,
-} from './guidance-host-installation.js';
 export { DeliveryLifecycle } from './delivery-lifecycle.js';
 export { DeliveryGitHandoff } from './delivery-git-handoff.js';
 export { DeliveryGitHandoffError } from './delivery-git-handoff-error.js';
@@ -86,8 +81,6 @@ export {
   type UserDecisionResult,
   type VerificationResult,
   type VerificationCommandEvidence,
-  type VisualAdjustmentResult,
-  type VisualReviewResult,
 } from './delivery-lifecycle-types.js';
 export {
   AgentResultRejectionError,

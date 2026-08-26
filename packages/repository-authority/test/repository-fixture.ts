@@ -14,11 +14,11 @@ export interface RepositoryFixture {
 }
 
 export function createRepositoryFixture(): RepositoryFixture {
-  const directory = mkdtempSync(join(tmpdir(), 'telesarch-authority-'));
+  const directory = mkdtempSync(join(tmpdir(), 'big-plan-authority-'));
   const repository = join(directory, 'repository');
   git(directory, 'init', '--initial-branch=main', repository);
-  git(repository, 'config', 'user.name', 'Telesarch Test');
-  git(repository, 'config', 'user.email', 'telesarch@example.test');
+  git(repository, 'config', 'user.name', 'Big Plan Test');
+  git(repository, 'config', 'user.email', 'big-plan@example.test');
   writeFileSync(join(repository, 'README.md'), '# Test\n');
   git(repository, 'add', 'README.md');
   git(repository, 'commit', '-m', 'Initial commit');
@@ -34,7 +34,6 @@ export function git(workingDirectory: string, ...arguments_: string[]): void {
 
 export const testConfiguration: RepositoryAuthorityConfigurationInput = {
   lifecycle: 'pre-production',
-  developmentMode: 'standard',
   verificationCommands: ['pnpm test', 'pnpm typecheck'],
   occurredAtMs: 1,
 };

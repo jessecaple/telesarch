@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { changedPathsBetween, repositoryHasCommit } from '@telesarch/git';
+import { changedPathsBetween, repositoryHasCommit } from '@big-plan/git';
 import type Database from 'better-sqlite3';
 
 import { readCheckoutState, readTrackedBlobIds } from './checkout-state.js';

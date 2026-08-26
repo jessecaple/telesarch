@@ -6,8 +6,6 @@ export const runtimeRoles = [
   'implementation',
   'leaf-review',
   'integration-review',
-  'storybook-composition',
-  'visual-adjustment',
 ] as const;
 
 export type RuntimeRole = (typeof runtimeRoles)[number];
@@ -19,9 +17,6 @@ export const runtimeCalls = [
   'implementation-correction',
   'leaf-review-completed-leaf',
   'integration-review-completed-parent',
-  'storybook-composition-interface',
-  'visual-adjustment-requested-change',
-  'integration-review-visual-adjustment',
 ] as const;
 
 export type RuntimeCall = (typeof runtimeCalls)[number];
@@ -69,26 +64,6 @@ export const roleConfigurations: Record<RuntimeRole, RoleConfiguration> = {
     contextInstructions,
     engineeringInstructions,
   ]),
-  'storybook-composition': role(
-    'standard',
-    'read-write',
-    [
-      contextInstructions,
-      engineeringInstructions,
-      'instruction-sets/storybook/shared.instructions.md',
-    ],
-    'roles/storybook-composition/shared.instructions.md',
-  ),
-  'visual-adjustment': role(
-    'standard',
-    'read-write',
-    [
-      contextInstructions,
-      engineeringInstructions,
-      'instruction-sets/storybook/shared.instructions.md',
-    ],
-    'roles/visual-adjustment/shared.instructions.md',
-  ),
 };
 
 export const callConfigurations: Record<RuntimeCall, CallConfiguration> = {
@@ -122,21 +97,6 @@ export const callConfigurations: Record<RuntimeCall, CallConfiguration> = {
     'completed-parent',
     'review-result',
   ),
-  'storybook-composition-interface': contract(
-    'storybook-composition',
-    'interface',
-    'storybook-composition-result',
-  ),
-  'visual-adjustment-requested-change': contract(
-    'visual-adjustment',
-    'requested-change',
-    'visual-adjustment-result',
-  ),
-  'integration-review-visual-adjustment': contract(
-    'integration-review',
-    'visual-adjustment',
-    'review-result',
-  ),
 };
 
 const contextTools = [
@@ -149,35 +109,12 @@ const contextTools = [
   'source_context',
 ] as const;
 
-export const storybookRoleTools = [
-  'list_projects',
-  'find_stories',
-  'changed_stories',
-  'preview_stories',
-  'run_tests',
-  'list_components',
-  'component_documentation',
-  'story_documentation',
-] as const;
-
 export const roleToolAllowlists: Record<RuntimeRole, readonly string[]> = {
   decomposition: ['pull_assignment', 'submit_result', ...contextTools],
   'delivery-revision': ['pull_assignment', 'submit_result', ...contextTools],
   implementation: ['pull_assignment', 'submit_result', ...contextTools],
   'leaf-review': ['pull_assignment', 'submit_result', ...contextTools],
   'integration-review': ['pull_assignment', 'submit_result', ...contextTools],
-  'storybook-composition': [
-    'pull_assignment',
-    'submit_result',
-    ...contextTools,
-    ...storybookRoleTools,
-  ],
-  'visual-adjustment': [
-    'pull_assignment',
-    'submit_result',
-    ...contextTools,
-    ...storybookRoleTools,
-  ],
 };
 
 export const instructionSourceDefinitions: readonly InstructionSourceDefinition[] =

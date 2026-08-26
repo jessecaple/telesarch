@@ -1,4 +1,4 @@
-import type { DeliveryRecord } from '@telesarch/repository-authority';
+import type { DeliveryRecord } from '@big-plan/repository-authority';
 
 import type { ApprovedDeliveryIntent } from './delivery-lifecycle-types.js';
 

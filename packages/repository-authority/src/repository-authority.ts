@@ -4,12 +4,12 @@ import { dirname, join } from 'node:path';
 import {
   repositoryCheckoutFacts,
   type RepositoryCheckoutFacts,
-} from '@telesarch/git';
+} from '@big-plan/git';
 import {
   openSqliteDatabase,
   useSqliteDatabase,
   type SqliteDatabase,
-} from '@telesarch/sqlite';
+} from '@big-plan/sqlite';
 import type Database from 'better-sqlite3';
 
 import {
@@ -107,7 +107,7 @@ function openAuthorityDatabase(path: string): RepositoryAuthorityDatabase {
 }
 
 function authorityPath(commonDirectory: string): string {
-  return join(commonDirectory, 'telesarch', 'repository.sqlite');
+  return join(commonDirectory, 'big-plan', 'repository.sqlite');
 }
 
 function removeDatabaseFiles(path: string): void {
