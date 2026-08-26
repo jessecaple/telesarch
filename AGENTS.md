@@ -5,11 +5,11 @@
 
 # Working approach
 
-Telesarch is still under construction. Do not use Telesarch to coordinate development of this repository unless the user explicitly asks to test it.
+Big Plan is still under construction. Do not use Big Plan to coordinate development of this repository unless the user explicitly asks to test it.
 
 Work with the user through the normal Codex development cycle: understand the outcome, inspect the relevant code, resolve material product decisions, implement, verify, review in proportion to risk, and deliver through Git.
 
-- Telesarch is pre-production. Do not add backward compatibility; change existing contracts and migrations directly.
+- Big Plan is pre-production. Do not add backward compatibility; change existing contracts and migrations directly.
 - Make routine engineering decisions without involving the user.
 - Ask for user judgment only when alternatives materially change product behavior, supported use cases, risk, or an external contract. Ask one focused question at a time.
 - Keep work bounded to the requested outcome. Surface a required scope or contract change instead of silently expanding the task.
@@ -20,11 +20,11 @@ Work with the user through the normal Codex development cycle: understand the ou
 
 # Product design principles
 
-The following describes the product being built. It does not require this coordinating session to operate Telesarch manually.
+The following describes the product being built. It does not require this coordinating session to operate Big Plan manually.
 
 ## Delivery graph
 
-- Each accepted delivery owns one independent local graph from approved intent through handoff or abandonment. Telesarch maintains no permanent project graph.
+- Each accepted delivery owns one independent local graph from approved intent through handoff or abandonment. Big Plan maintains no permanent project graph.
 - Refine product intent conversationally before creating the delivery.
 - Decompose one level at a time. Assess each child independently and recursively until every path ends in work an agent can implement and review reliably in one attempt.
 - Direct children collectively deliver their parent. Split work by behavior, invariant, state transition, or contract, not by file, layer, phase, tests, documentation, or diff size.
@@ -61,11 +61,8 @@ Every node contains:
 - Accepting a delivery creates one branch and linked worktree. All nodes use them.
 - Implement eligible leaves sequentially. Each successful leaf is one coherent commit when practical.
 - Review each leaf once. Review each parent that combines multiple implemented children once, including the root.
-- Keep a coherent UI boundary's visual review open across in-scope adjustments. Resume one visual-adjustment responsibility, keep its Storybook preview warm, and run verification and affected review once after approval.
-- Route visual feedback that changes behavior, scope, or product direction through delivery revision.
 - Accepted review findings become explicit correction work and receive their own leaf review.
-- User attention is limited to unresolved product decisions, coherent visual reviews, and behavior automated checks cannot establish.
-- Review each Storybook-backed interface outcome after its nearest multi-child parent passes integration review. Carry single-child outcomes to the next such boundary or the root. Revisions that change the interface require another visual review.
+- User attention is limited to unresolved product decisions and behavior automated checks cannot establish.
 - Only the root delivery integrates. Before handoff, reconcile it with the current primary branch and verify the result.
 - For a GitHub remote, attempt one push and pull request using the developer's existing Git and `gh` credentials. Otherwise report the retained branch and worktree. The user controls merging.
 - Delete local delivery state only after integration is confirmed. Abandonment preserves any otherwise unreachable source commits.
