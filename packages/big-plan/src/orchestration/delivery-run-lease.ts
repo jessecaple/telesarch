@@ -5,7 +5,7 @@ import {
   readRunningDeliveryProcesses,
   recordDeliveryProcess,
   stopDeliveryProcess,
-} from '@big-plan/repository-authority';
+} from '#repository-authority';
 
 export interface DeliveryRunLease {
   acquire(workingDirectory: string, deliveryId: string): string;

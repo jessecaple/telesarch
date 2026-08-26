@@ -5,7 +5,7 @@ import {
   DeliverySessionWorkflow,
   inspectDelivery,
   type DeliveryRoleAssignment,
-} from '@big-plan/engine';
+} from '#engine';
 
 import {
   subagentResultPayload,

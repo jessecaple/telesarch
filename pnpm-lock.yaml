@@ -54,8 +54,6 @@ importers:
         specifier: 4.1.10
         version: 4.1.10(@types/node@24.13.3)(@vitest/browser-playwright@4.1.10)(msw@2.15.0(@types/node@24.13.3)(@typescript/typescript6@6.0.2))(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.1)(yaml@2.9.0))
 
-  packages/agent-contracts: {}
-
   packages/big-plan:
     dependencies:
       '@deepseek-ai/cordis':
@@ -67,6 +65,9 @@ importers:
       '@deepseek-ai/dsh-tools':
         specifier: ^0.1.1-rc.2
         version: 0.1.1-rc.2(119bc70f73f8eddebfaa6b47561adeb3)
+      ajv:
+        specifier: 8.20.0
+        version: 8.20.0
       better-sqlite3:
         specifier: 'catalog:'
         version: 13.0.3
@@ -74,12 +75,6 @@ importers:
         specifier: npm:@typescript/typescript6@~6.0.2
         version: '@typescript/typescript6@6.0.2'
     devDependencies:
-      '@big-plan/engine':
-        specifier: workspace:*
-        version: link:../engine
-      '@big-plan/repository-authority':
-        specifier: workspace:*
-        version: link:../repository-authority
       '@deepseek-ai/dsh-agent':
         specifier: 0.1.1-rc.2
         version: 0.1.1-rc.2(c1537a8836b04097f168b024f1e38d85)
@@ -92,97 +87,6 @@ importers:
       esbuild:
         specifier: ^0.28.2
         version: 0.28.2
-
-  packages/code-context:
-    dependencies:
-      '@big-plan/source-index':
-        specifier: workspace:*
-        version: link:../source-index
-
-  packages/engine:
-    dependencies:
-      '@big-plan/agent-contracts':
-        specifier: workspace:*
-        version: link:../agent-contracts
-      '@big-plan/code-context':
-        specifier: workspace:*
-        version: link:../code-context
-      '@big-plan/git':
-        specifier: workspace:*
-        version: link:../git
-      '@big-plan/github':
-        specifier: workspace:*
-        version: link:../github
-      '@big-plan/repository-authority':
-        specifier: workspace:*
-        version: link:../repository-authority
-      '@big-plan/repository-tooling':
-        specifier: workspace:*
-        version: link:../repository-tooling
-      '@big-plan/source-index':
-        specifier: workspace:*
-        version: link:../source-index
-      ajv:
-        specifier: 8.20.0
-        version: 8.20.0
-
-  packages/git: {}
-
-  packages/github: {}
-
-  packages/repository-authority:
-    dependencies:
-      '@big-plan/git':
-        specifier: workspace:*
-        version: link:../git
-      '@big-plan/sqlite':
-        specifier: workspace:*
-        version: link:../sqlite
-      better-sqlite3:
-        specifier: 'catalog:'
-        version: 13.0.3
-    devDependencies:
-      '@types/better-sqlite3':
-        specifier: 9.6.0
-        version: 9.6.0
-
-  packages/repository-tooling:
-    dependencies:
-      '@big-plan/git':
-        specifier: workspace:*
-        version: link:../git
-      '@big-plan/repository-authority':
-        specifier: workspace:*
-        version: link:../repository-authority
-
-  packages/source-index:
-    dependencies:
-      '@big-plan/git':
-        specifier: workspace:*
-        version: link:../git
-      '@big-plan/sqlite':
-        specifier: workspace:*
-        version: link:../sqlite
-      better-sqlite3:
-        specifier: 'catalog:'
-        version: 13.0.3
-      typescript:
-        specifier: npm:@typescript/typescript6@~6.0.2
-        version: '@typescript/typescript6@6.0.2'
-    devDependencies:
-      '@types/better-sqlite3':
-        specifier: 9.6.0
-        version: 9.6.0
-
-  packages/sqlite:
-    dependencies:
-      better-sqlite3:
-        specifier: 'catalog:'
-        version: 13.0.3
-    devDependencies:
-      '@types/better-sqlite3':
-        specifier: 9.6.0
-        version: 9.6.0
 
 packages:
 
@@ -2048,6 +1952,7 @@ packages:
   eslint@9.39.5:
     resolution: {integrity: sha512-DgZS62aPLXKlnxILS/AYCoRvHaZeXceIzlXPkkGGzJWSow1aEk0lbTlxUSlyjC8jcaKxAdOnTDz+o1JFSBsyjw==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+    deprecated: This version is no longer supported. Please see https://eslint.org/version-support for other options.
     hasBin: true
     peerDependencies:
       jiti: '*'

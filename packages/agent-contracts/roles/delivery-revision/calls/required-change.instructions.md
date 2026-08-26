@@ -1,1 +1,0 @@
-Apply the supplied change to the delivery graph. Return `applied` with the complete revised graph when approved intent determines the result. Return `decision-required` with one focused question and an optional recommendation only when a material product choice cannot be inferred safely.

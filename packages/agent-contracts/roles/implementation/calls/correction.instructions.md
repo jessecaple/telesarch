@@ -1,1 +1,0 @@
-Correct every supplied accepted finding or verification failure while preserving the assigned leaf's approved behavior. Return `completed` with only manual tests that automated checks cannot establish. Return `revision-required` only when the delivery contract must change before a correct fix is possible.

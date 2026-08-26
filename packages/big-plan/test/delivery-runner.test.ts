@@ -3,7 +3,7 @@ import type {
   SubagentRuntime,
   SubagentStartRequest,
 } from '@deepseek-ai/dsh-subagent';
-import type { DeliveryRoleAssignment } from '@big-plan/engine';
+import type { DeliveryRoleAssignment } from '#engine';
 import { describe, expect, it, vi } from 'vitest';
 
 import { DeliveryRunner } from '../src/orchestration/delivery-runner.js';

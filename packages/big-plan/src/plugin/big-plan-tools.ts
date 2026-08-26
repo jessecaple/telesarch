@@ -6,7 +6,7 @@ import {
   inspectDelivery,
   inspectRepositorySetup,
   type DeliverySessionState,
-} from '@big-plan/engine';
+} from '#engine';
 import {
   createRepositoryConfiguration,
   initializeRepositoryAuthority,
@@ -14,7 +14,7 @@ import {
   openRepositoryAuthority,
   readRepositoryConfiguration,
   RepositoryAuthorityInputError,
-} from '@big-plan/repository-authority';
+} from '#repository-authority';
 
 import { DeliveryJobManager } from '../orchestration/delivery-job-manager.js';
 
