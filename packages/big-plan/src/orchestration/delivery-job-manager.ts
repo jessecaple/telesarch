@@ -21,6 +21,7 @@ declare module '@deepseek-ai/dsh-jobs' {
 export class DeliveryJobManager {
   private readonly activeDeliveries = new Set<string>();
   private readonly activeJobs = new Set<{
+    readonly deliveryId: string;
     readonly controller: AbortController;
     readonly done: Promise<unknown>;
   }>();
@@ -45,7 +46,11 @@ export class DeliveryJobManager {
         outputLimitBytes: 50_000,
         run: () => {
           const done = this.run(request, abort.signal);
-          const active = { controller: abort, done };
+          const active = {
+            deliveryId: request.deliveryId,
+            controller: abort,
+            done,
+          };
           this.activeJobs.add(active);
           void done.then(
             () => this.activeJobs.delete(active),
@@ -62,6 +67,15 @@ export class DeliveryJobManager {
       this.activeDeliveries.delete(request.deliveryId);
       throw error;
     }
+  }
+
+  async cancel(deliveryId: string, reason: string): Promise<boolean> {
+    const active = [...this.activeJobs].filter(
+      (job) => job.deliveryId === deliveryId,
+    );
+    for (const job of active) job.controller.abort(reason);
+    await Promise.all(active.map((job) => job.done));
+    return active.length > 0;
   }
 
   async dispose(): Promise<void> {

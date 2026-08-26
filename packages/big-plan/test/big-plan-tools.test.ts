@@ -22,6 +22,28 @@ describe('Big Plan delivery tools', () => {
     }
   });
 
+  it('reports no deliveries before repository state exists', async () => {
+    const repository = createRepository(temporaryDirectories);
+    const tools = createBigPlanTools({
+      contractsRoot,
+      provider: 'spawn',
+      jobs: {} as DeliveryJobManager,
+    });
+    const status = tools.find(({ name }) => name === 'big_plan_status');
+    if (status === undefined) throw new Error('Status tool missing.');
+
+    await expect(
+      status.execute({}, {
+        agent: { session: { header: { cwd: repository } } } as Agent,
+      } as never),
+    ).resolves.toEqual({
+      delivery_id: '',
+      status: 'empty',
+      summary: 'No active Big Plan deliveries.',
+    });
+    expect(existsSync(join(repository, '.git/big-plan'))).toBe(false);
+  });
+
   it('initializes durable state and starts a delivery in a fresh repository', async () => {
     const repository = createRepository(temporaryDirectories);
     const start = vi.fn(() => 'job-1' as JobId);

@@ -4,6 +4,7 @@ import { defineTool } from '@deepseek-ai/dsh-tools';
 import {
   DeliverySessionWorkflow,
   inspectDelivery,
+  inspectRepositorySetup,
   type DeliverySessionState,
 } from '@big-plan/engine';
 import {
@@ -90,7 +91,8 @@ function startTool(options: BigPlanToolsOptions): ToolDefinition {
       const workingDirectory = workingDirectoryFor(exec.agent);
       ensureConfiguration(
         workingDirectory,
-        args.verification_commands ?? defaultVerificationCommands,
+        args.verification_commands ??
+          inspectRepositorySetup(workingDirectory).detectedVerificationCommands,
       );
       const session = new DeliverySessionWorkflow(
         workingDirectory,
@@ -126,24 +128,19 @@ function statusTool(options: BigPlanToolsOptions): ToolDefinition {
     output,
     isConcurrencySafe: () => true,
     async execute(args, exec) {
+      const workingDirectory = workingDirectoryFor(exec.agent);
+      if (!inspectRepositoryAuthority(workingDirectory).initialized) {
+        return emptyStatus();
+      }
       const session = new DeliverySessionWorkflow(
-        workingDirectoryFor(exec.agent),
+        workingDirectory,
         options.contractsRoot,
       );
       const deliveries = session.listDeliveries();
       const deliveryId = args.delivery_id ?? deliveries.at(-1)?.deliveryId;
-      if (deliveryId === undefined) {
-        return {
-          delivery_id: '',
-          status: 'empty',
-          summary: 'No active Big Plan deliveries.',
-        };
-      }
+      if (deliveryId === undefined) return emptyStatus();
       const state = session.selectDelivery(deliveryId);
-      const inspection = inspectDelivery(
-        workingDirectoryFor(exec.agent),
-        deliveryId,
-      );
+      const inspection = inspectDelivery(workingDirectory, deliveryId);
       const completed = inspection.delivery.graph.nodes.filter(
         ({ state: nodeState }) => nodeState === 'completed',
       );
@@ -253,8 +250,13 @@ function abandonTool(options: BigPlanToolsOptions): ToolDefinition {
     output,
     isConcurrencySafe: () => false,
     async execute(args, exec) {
+      const workingDirectory = workingDirectoryFor(exec.agent);
+      await options.jobs.cancel(
+        args.delivery_id,
+        'Big Plan delivery abandoned.',
+      );
       const session = new DeliverySessionWorkflow(
-        workingDirectoryFor(exec.agent),
+        workingDirectory,
         options.contractsRoot,
       );
       session.selectDelivery(args.delivery_id);
@@ -344,10 +346,10 @@ function requireAgent(agent: Agent | undefined): Agent {
   return agent;
 }
 
-const defaultVerificationCommands = [
-  'pnpm format:check',
-  'pnpm lint',
-  'pnpm typecheck',
-  'pnpm test',
-  'pnpm build',
-];
+function emptyStatus(): BigPlanToolResult {
+  return {
+    delivery_id: '',
+    status: 'empty',
+    summary: 'No active Big Plan deliveries.',
+  };
+}

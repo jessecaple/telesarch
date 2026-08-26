@@ -38,7 +38,7 @@ describe('Big Plan plugin', () => {
     expect(cleanups).toHaveLength(1);
   });
 
-  it('cancels and drains an active delivery when disposed', async () => {
+  it('cancels and drains one active delivery by id', async () => {
     let hooks: JobHooks | undefined;
     const jobs = {
       start(spec: JobStart) {
@@ -63,6 +63,9 @@ describe('Big Plan plugin', () => {
       parent: {} as Agent,
       provider: 'spawn',
     });
+    await expect(
+      manager.cancel('delivery-1', 'Delivery abandoned.'),
+    ).resolves.toBe(true);
     await manager.dispose();
 
     await expect(hooks?.done).resolves.toMatchObject({
