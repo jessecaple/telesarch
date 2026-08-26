@@ -105,9 +105,7 @@ function continuedRoleAction(
   next: DeliveryNextAction,
 ): DeliveryActionRecord | undefined {
   return next.kind === 'continue-action' &&
-    !['verification', 'manual-test', 'user-decision'].includes(
-      next.action.kind,
-    )
+    !['verification', 'manual-test', 'user-decision'].includes(next.action.kind)
     ? next.action
     : undefined;
 }

@@ -15,10 +15,7 @@ export interface RepositorySetupInspection {
   readonly initialized: boolean;
   readonly repositoryRoot: string;
   readonly detectedVerificationCommands: readonly string[];
-  readonly choicesRequired: readonly (
-    | 'verificationCommands'
-    | 'lifecycle'
-  )[];
+  readonly choicesRequired: readonly ('verificationCommands' | 'lifecycle')[];
   readonly configuration?: RepositoryAuthorityConfiguration;
 }
 
@@ -102,7 +99,6 @@ function detectedCommands(
     .filter((name) => typeof scripts[name] === 'string')
     .map((name) => `pnpm ${name}`);
 }
-
 
 function object(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === 'object' && !Array.isArray(value);

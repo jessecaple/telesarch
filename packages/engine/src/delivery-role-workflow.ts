@@ -128,4 +128,3 @@ function roleAction(action: DeliveryActionRecord): boolean {
     'integration-review',
   ].includes(action.kind);
 }
-
