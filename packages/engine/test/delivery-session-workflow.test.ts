@@ -157,7 +157,12 @@ describe('delivery session workflow', () => {
       role: 'leaf-review',
       call: 'leaf-review-completed-leaf',
       workspaceAccess: 'read-only',
-      input: { source: { changedPaths: ['greeting.tsx'] } },
+      input: {
+        source: {
+          changedPaths: ['greeting.tsx'],
+          patch: expect.stringContaining('+export const greeting'),
+        },
+      },
     });
     const reviewer = new DeliveryRoleWorkflow(
       reviewAssignment.workingDirectory,

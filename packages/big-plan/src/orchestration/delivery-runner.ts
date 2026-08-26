@@ -25,6 +25,7 @@ export interface DeliveryRunnerOptions {
   readonly parent: Agent;
   readonly signal: AbortSignal;
   readonly provider: string;
+  readonly onProgress?: (record: string) => void;
 }
 
 /** Advance one persisted delivery until it reaches a human or terminal boundary. */
@@ -45,6 +46,16 @@ export class DeliveryRunner {
         );
       }
       const state = await session.nextAction();
+      options.onProgress?.(
+        JSON.stringify({
+          deliveryId: options.deliveryId,
+          state: state.state,
+          message: state.message,
+          action: 'assignment' in state ? state.assignment?.call : undefined,
+          nodeId:
+            'assignment' in state ? state.assignment?.subjectNodeId : undefined,
+        }),
+      );
       if (state.state === 'Complete') {
         return await handoffDelivery(session, options);
       }

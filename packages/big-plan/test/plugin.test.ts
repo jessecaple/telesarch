@@ -72,5 +72,7 @@ describe('Big Plan plugin', () => {
       status: 'killed',
       detail: 'cancelled',
     });
+    expect(hooks?.readOutput?.()).toContain('"deliveryId":"delivery-1"');
+    expect(hooks?.readOutput?.()).toBe('');
   });
 });

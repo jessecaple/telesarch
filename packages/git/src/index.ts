@@ -34,6 +34,7 @@ export {
 } from './repository-checkout.js';
 export {
   changedPaths,
+  changedPatchBetween,
   changedPathsBetween,
   currentBranch,
   currentCommit,

@@ -45,7 +45,10 @@ export class DeliveryJobManager {
         owner: request.parent,
         outputLimitBytes: 50_000,
         run: () => {
-          const done = this.run(request, abort.signal);
+          let output = '';
+          const done = this.run(request, abort.signal, (record) => {
+            output += record + '\n';
+          });
           const active = {
             deliveryId: request.deliveryId,
             controller: abort,
@@ -60,6 +63,11 @@ export class DeliveryJobManager {
             cancel: (reason?: string) =>
               abort.abort(reason ?? 'Big Plan job cancelled.'),
             done,
+            readOutput: () => {
+              const unread = output;
+              output = '';
+              return unread;
+            },
           };
         },
       });
@@ -89,30 +97,40 @@ export class DeliveryJobManager {
   private async run(
     request: DeliveryJobRequest,
     signal: AbortSignal,
+    progress: (record: string) => void,
   ): Promise<{
     status: 'completed' | 'killed' | 'failed';
     detail: string;
-    output: string;
+    output?: string;
   }> {
     try {
-      const result = await this.runner.run({ ...request, signal });
+      const result = await this.runner.run({
+        ...request,
+        signal,
+        onProgress: progress,
+      });
+      progress(JSON.stringify(result));
       return {
         status: 'completed',
         detail: result.status,
-        output: JSON.stringify(result),
       };
     } catch (error) {
+      progress(
+        JSON.stringify({
+          deliveryId: request.deliveryId,
+          error: renderError(error),
+          cancelled: signal.aborted,
+        }),
+      );
       if (signal.aborted) {
         return {
           status: 'killed',
           detail: 'cancelled',
-          output: renderError(signal.reason),
         };
       }
       return {
         status: 'failed',
         detail: 'delivery failed',
-        output: renderError(error),
       };
     } finally {
       this.activeDeliveries.delete(request.deliveryId);

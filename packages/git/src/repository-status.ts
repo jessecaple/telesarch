@@ -103,6 +103,29 @@ export function changedPathsBetween(
   return [...new Set(output.split('\0').filter((path) => path.length > 0))];
 }
 
+export function changedPatchBetween(
+  workingDirectory: string,
+  baseCommit: string,
+  headCommit: string,
+  maximumCharacters = 100_000,
+): string {
+  const patch = runGitSyncRaw(workingDirectory, [
+    'diff',
+    '--no-ext-diff',
+    '--no-renames',
+    '--unified=40',
+    baseCommit,
+    headCommit,
+  ]);
+  if (patch.length <= maximumCharacters) return patch;
+  return (
+    patch.slice(0, maximumCharacters) +
+    '\n[Big Plan diff truncated at ' +
+    String(maximumCharacters) +
+    ' characters]\n'
+  );
+}
+
 export function refsContainingCommit(
   workingDirectory: string,
   commit: string,

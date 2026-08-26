@@ -88,6 +88,7 @@ function startTool(options: BigPlanToolsOptions): ToolDefinition {
     output,
     isConcurrencySafe: () => false,
     async execute(args, exec) {
+      throwIfAborted(exec.signal);
       const workingDirectory = workingDirectoryFor(exec.agent);
       ensureConfiguration(
         workingDirectory,
@@ -108,6 +109,10 @@ function startTool(options: BigPlanToolsOptions): ToolDefinition {
         designHorizon: args.design_horizon ?? [],
       });
       const deliveryId = deliveryIdFrom(state, session);
+      if (exec.signal?.aborted === true) {
+        await session.abandon();
+        throwIfAborted(exec.signal);
+      }
       const jobId = options.jobs.start({
         workingDirectory,
         contractsRoot: options.contractsRoot,
@@ -183,12 +188,14 @@ function resumeTool(options: BigPlanToolsOptions): ToolDefinition {
     output,
     isConcurrencySafe: () => false,
     async execute(args, exec) {
+      throwIfAborted(exec.signal);
       const workingDirectory = workingDirectoryFor(exec.agent);
       const session = new DeliverySessionWorkflow(
         workingDirectory,
         options.contractsRoot,
       );
       const state = session.selectDelivery(args.delivery_id);
+      throwIfAborted(exec.signal);
       const jobId = options.jobs.start({
         workingDirectory,
         contractsRoot: options.contractsRoot,
@@ -215,6 +222,7 @@ function answerTool(options: BigPlanToolsOptions): ToolDefinition {
     output,
     isConcurrencySafe: () => false,
     async execute(args, exec) {
+      throwIfAborted(exec.signal);
       const workingDirectory = workingDirectoryFor(exec.agent);
       const session = new DeliverySessionWorkflow(
         workingDirectory,
@@ -229,6 +237,7 @@ function answerTool(options: BigPlanToolsOptions): ToolDefinition {
               observations: args.observations ?? [],
             })
           : session.answerDecision(requireAnswer(args.answer));
+      throwIfAborted(exec.signal);
       const jobId = options.jobs.start({
         workingDirectory,
         contractsRoot: options.contractsRoot,
@@ -250,6 +259,7 @@ function abandonTool(options: BigPlanToolsOptions): ToolDefinition {
     output,
     isConcurrencySafe: () => false,
     async execute(args, exec) {
+      throwIfAborted(exec.signal);
       const workingDirectory = workingDirectoryFor(exec.agent);
       await options.jobs.cancel(
         args.delivery_id,
@@ -322,6 +332,10 @@ function result(
     status: state.state,
     summary: state.message,
   };
+}
+
+function throwIfAborted(signal: AbortSignal | undefined): void {
+  signal?.throwIfAborted();
 }
 
 function requireAnswer(answer: string | undefined): string {

@@ -15,7 +15,11 @@ import {
   type DeliveryRecord,
   type RepositoryAuthorityDatabase,
 } from '@big-plan/repository-authority';
-import { changedPathsBetween, currentCommit } from '@big-plan/git';
+import {
+  changedPatchBetween,
+  changedPathsBetween,
+  currentCommit,
+} from '@big-plan/git';
 
 import { DeliveryGraphProjections } from './delivery-graph-projections.js';
 import { DeliveryLifecycleError } from './delivery-lifecycle-error.js';
@@ -108,6 +112,11 @@ export function buildDeliveryRoleAssignment(input: {
           startingCommit,
           headCommit,
         ).slice(0, 200),
+        patch: changedPatchBetween(
+          delivery.worktreePath,
+          startingCommit,
+          headCommit,
+        ),
         orientation,
       },
       repository: { lifecycle: configuration.lifecycle },
