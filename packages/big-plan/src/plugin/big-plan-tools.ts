@@ -3,10 +3,13 @@ import type { ToolDefinition } from '@deepseek-ai/dsh-tools';
 import { defineTool } from '@deepseek-ai/dsh-tools';
 import {
   DeliverySessionWorkflow,
+  inspectDelivery,
   type DeliverySessionState,
 } from '@big-plan/engine';
 import {
   createRepositoryConfiguration,
+  initializeRepositoryAuthority,
+  inspectRepositoryAuthority,
   openRepositoryAuthority,
   readRepositoryConfiguration,
   RepositoryAuthorityInputError,
@@ -29,6 +32,11 @@ const output = {
       job_id: { type: 'string' },
       status: { type: 'string', required: true },
       summary: { type: 'string', required: true },
+      graph_summary: { type: 'string' },
+      current_action: { type: 'string' },
+      completed_nodes: { type: 'array', items: { type: 'string' } },
+      eligible_nodes: { type: 'array', items: { type: 'string' } },
+      required_attention: { type: 'string' },
     },
   },
   render: (_args: unknown, value: BigPlanToolResult) => [
@@ -41,6 +49,11 @@ interface BigPlanToolResult {
   readonly job_id?: string;
   readonly status: string;
   readonly summary: string;
+  readonly graph_summary?: string;
+  readonly current_action?: string;
+  readonly completed_nodes?: string[];
+  readonly eligible_nodes?: string[];
+  readonly required_attention?: string;
 }
 
 /** Build the complete host-only Big Plan tool surface. */
@@ -126,7 +139,40 @@ function statusTool(options: BigPlanToolsOptions): ToolDefinition {
           summary: 'No active Big Plan deliveries.',
         };
       }
-      return result(deliveryId, session.selectDelivery(deliveryId));
+      const state = session.selectDelivery(deliveryId);
+      const inspection = inspectDelivery(
+        workingDirectoryFor(exec.agent),
+        deliveryId,
+      );
+      const completed = inspection.delivery.graph.nodes.filter(
+        ({ state: nodeState }) => nodeState === 'completed',
+      );
+      const eligible = inspection.delivery.graph.nodes.filter(
+        ({ state: nodeState }) => nodeState === 'ready',
+      );
+      return {
+        ...result(deliveryId, state),
+        graph_summary:
+          String(inspection.delivery.graph.nodes.length) +
+          ' nodes; ' +
+          String(completed.length) +
+          ' completed; ' +
+          String(eligible.length) +
+          ' eligible.',
+        current_action:
+          inspection.nextAction.status === 'available'
+            ? JSON.stringify(inspection.nextAction.action)
+            : inspection.nextAction.problem,
+        completed_nodes: completed.map(
+          ({ nodeId, title }) => nodeId + ': ' + title,
+        ),
+        eligible_nodes: eligible.map(
+          ({ nodeId, title }) => nodeId + ': ' + title,
+        ),
+        ...(state.state === 'Needs your input'
+          ? { required_attention: state.message }
+          : {}),
+      };
     },
   });
 }
@@ -134,7 +180,8 @@ function statusTool(options: BigPlanToolsOptions): ToolDefinition {
 function resumeTool(options: BigPlanToolsOptions): ToolDefinition {
   return defineTool({
     name: 'big_plan_resume',
-    description: 'Resume an incomplete delivery from its persisted next action.',
+    description:
+      'Resume an incomplete delivery from its persisted next action.',
     parameters: { delivery_id: { type: 'string', required: true } },
     output,
     isConcurrencySafe: () => false,
@@ -225,17 +272,25 @@ function ensureConfiguration(
   workingDirectory: string,
   verificationCommands: readonly string[],
 ): void {
+  const configuration = {
+    lifecycle: 'pre-production' as const,
+    verificationCommands,
+    occurredAtMs: Date.now(),
+  };
+  if (!inspectRepositoryAuthority(workingDirectory).initialized) {
+    initializeRepositoryAuthority(
+      workingDirectory,
+      configuration,
+    ).database.close();
+    return;
+  }
   const authority = openRepositoryAuthority(workingDirectory);
   try {
     try {
       readRepositoryConfiguration(authority.database);
     } catch (error) {
       if (!(error instanceof RepositoryAuthorityInputError)) throw error;
-      createRepositoryConfiguration(authority.database, {
-        lifecycle: 'pre-production',
-        verificationCommands,
-        occurredAtMs: Date.now(),
-      });
+      createRepositoryConfiguration(authority.database, configuration);
     }
   } finally {
     authority.database.close();
@@ -249,7 +304,8 @@ function deliveryIdFrom(
   const deliveryId =
     state.state === 'Working' ? state.assignment?.deliveryId : undefined;
   const resolved = deliveryId ?? session.listDeliveries().at(-1)?.deliveryId;
-  if (resolved === undefined) throw new Error('Big Plan delivery was not created.');
+  if (resolved === undefined)
+    throw new Error('Big Plan delivery was not created.');
   return resolved;
 }
 

@@ -49,11 +49,9 @@ describe('Big Plan plugin', () => {
     const runner = {
       run: ({ signal }: { signal: AbortSignal }) =>
         new Promise((_, reject) => {
-          signal.addEventListener(
-            'abort',
-            () => reject(signal.reason),
-            { once: true },
-          );
+          signal.addEventListener('abort', () => reject(signal.reason), {
+            once: true,
+          });
         }),
     } as unknown as DeliveryRunner;
     const manager = new DeliveryJobManager(jobs, runner);

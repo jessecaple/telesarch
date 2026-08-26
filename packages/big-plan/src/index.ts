@@ -16,15 +16,14 @@ export interface Config {
 
 /** Register the host-only Big Plan plugin surface. */
 export function apply(ctx: Context, config: Config = {}): void {
-  const contractsRoot = fileURLToPath(new URL('../contracts/', import.meta.url));
+  const contractsRoot = fileURLToPath(
+    new URL('../contracts/', import.meta.url),
+  );
   const jobs = new DeliveryJobManager(
     ctx.jobs,
     new DeliveryRunner(ctx.subagents),
   );
-  ctx.effect(
-    () => async () => jobs.dispose(),
-    'big-plan.deliveryJobs()',
-  );
+  ctx.effect(() => async () => jobs.dispose(), 'big-plan.deliveryJobs()');
   for (const tool of createBigPlanTools({
     contractsRoot,
     provider: config.provider ?? 'spawn',

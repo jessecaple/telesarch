@@ -22,12 +22,6 @@ export interface DeliveryRunnerOptions {
   readonly provider: string;
 }
 
-const structuredResultSchema: ObjectJsonSchema = {
-  type: 'object',
-  additionalProperties: true,
-  properties: {},
-};
-
 /** Advance one persisted delivery until it reaches a human or terminal boundary. */
 export class DeliveryRunner {
   constructor(private readonly subagents: SubagentRuntime) {}
@@ -41,7 +35,9 @@ export class DeliveryRunner {
 
     for (let transitions = 0; transitions < 10_000; transitions += 1) {
       if (options.signal.aborted) {
-        throw options.signal.reason ?? new Error('Big Plan delivery cancelled.');
+        throw (
+          options.signal.reason ?? new Error('Big Plan delivery cancelled.')
+        );
       }
       const state = await session.nextAction();
       if (state.state === 'Complete') {
@@ -77,26 +73,49 @@ export class DeliveryRunner {
       signal: options.signal,
       persona: personaFor(assignment),
       prompt: [{ type: 'text', text: assignmentPrompt(assignment) }],
-      outputSchema: structuredResultSchema,
+      outputSchema: assignment.resultSchema as ObjectJsonSchema,
       toolFilter: toolFilterFor(assignment),
     });
-    try {
-      const result = await run.result;
+    const execution = run.result.then((result) => {
       if (result.stopReason !== 'completed') {
         throw new Error(
-          'Big Plan ' + assignment.role + ' subagent stopped with ' +
-            result.stopReason + ': ' + (result.diagnostic ?? 'no diagnostic'),
+          'Big Plan ' +
+            assignment.role +
+            ' subagent stopped with ' +
+            result.stopReason +
+            ': ' +
+            (result.diagnostic ?? 'no diagnostic'),
         );
       }
       if (result.structured === undefined) {
         throw new Error(
-          'Big Plan ' + assignment.role + ' subagent returned no structured result.',
+          'Big Plan ' +
+            assignment.role +
+            ' subagent returned no structured result.',
         );
       }
       return result.structured;
-    } finally {
-      await run.dispose();
+    });
+    const disposal = run.result.then(
+      () => run.dispose(),
+      () => run.dispose(),
+    );
+    const [executionResult, disposalResult] = await Promise.allSettled([
+      execution,
+      disposal,
+    ]);
+    if (
+      executionResult.status === 'rejected' &&
+      disposalResult.status === 'rejected'
+    ) {
+      throw new AggregateError(
+        [executionResult.reason, disposalResult.reason],
+        'Big Plan subagent execution and disposal both failed.',
+      );
     }
+    if (executionResult.status === 'rejected') throw executionResult.reason;
+    if (disposalResult.status === 'rejected') throw disposalResult.reason;
+    return executionResult.value;
   }
 }
 
@@ -113,7 +132,10 @@ function personaFor(assignment: DeliveryRoleAssignment): string {
     assignment.workspaceAccess === 'read-only'
       ? 'You are an independent read-only reviewer. Never modify repository files.'
       : 'You own this implementation responsibility and may modify its delivery worktree.';
-  return access + ' Follow the supplied role contract exactly. Return structured facts only; never choose or invoke successor work.';
+  return (
+    access +
+    ' Follow the supplied role contract exactly. Return structured facts only; never choose or invoke successor work.'
+  );
 }
 
 function assignmentPrompt(assignment: DeliveryRoleAssignment): string {
@@ -133,8 +155,8 @@ function assignmentPrompt(assignment: DeliveryRoleAssignment): string {
 
 function toolFilterFor(
   assignment: DeliveryRoleAssignment,
-): { readonly deny: readonly string[] } | undefined {
+): { readonly allow: readonly string[] } | undefined {
   return assignment.workspaceAccess === 'read-only'
-    ? { deny: ['edit', 'write'] }
+    ? { allow: ['read', 'glob', 'grep', 'read_image'] }
     : undefined;
 }

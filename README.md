@@ -15,6 +15,8 @@ dsh plugin --profile web add ./packages/big-plan
 
 The package declares `dsh.bundle.patch`, so DSH adds it to the profile bundle list and its patch activates the host plugin. Big Plan has no browser client or custom UI.
 
+Big Plan uses native SQLite. On first install, DSH may stop after adding an `allowBuilds.better-sqlite3` placeholder to the profile's `pnpm-workspace.yaml`. Set that value to `true` and repeat the same install command.
+
 ## Tools
 
 - `big_plan_start` creates a delivery and starts background coordination.
