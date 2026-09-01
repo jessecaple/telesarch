@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" role="img" aria-labelledby="title description">
+  <title id="title">Ink drop over a blue and white target</title>
+  <desc id="description">A glossy charcoal ink drop sits over concentric blue and white rings on a tilted target. The surrounding background is transparent.</desc>
+  <defs>
+    <linearGradient id="rim" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#315f96"/>
+      <stop offset="0.55" stop-color="#0b447c"/>
+      <stop offset="1" stop-color="#052b55"/>
+    </linearGradient>
+    <linearGradient id="face" x1="0" y1="0" x2="0.85" y2="1">
+      <stop offset="0" stop-color="#5176a4"/>
+      <stop offset="0.48" stop-color="#1d558d"/>
+      <stop offset="1" stop-color="#06396d"/>
+    </linearGradient>
+    <radialGradient id="drop" cx="36%" cy="26%" r="76%">
+      <stop offset="0" stop-color="#686b6e"/>
+      <stop offset="0.42" stop-color="#414347"/>
+      <stop offset="0.78" stop-color="#282a2d"/>
+      <stop offset="1" stop-color="#161719"/>
+    </radialGradient>
+    <linearGradient id="dropHighlight" x1="0" y1="0" x2="0.9" y2="1">
+      <stop offset="0" stop-color="#f6f7f7" stop-opacity="0.7"/>
+      <stop offset="0.45" stop-color="#c5c8cb" stop-opacity="0.18"/>
+      <stop offset="1" stop-color="#aeb3b7" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="collar" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f7f7f5"/>
+      <stop offset="1" stop-color="#aeb4bb"/>
+    </linearGradient>
+  </defs>
+
+  <g transform="translate(0 -3) rotate(-12 56 78)">
+    <ellipse cx="56" cy="82" rx="52" ry="37" fill="url(#rim)"/>
+    <path fill="#062b54" d="M5.2 79.5c2.7 18.8 25 34.7 51.9 35.7 26.7 1 48.7-12.8 50.9-31.2.2 2 .2 4.2-.1 6.3-2.6 20.5-25.1 35.4-52.5 34.3C28 123.6 5.2 106.3 4.1 85.7c-.1-2.1.3-4.2 1.1-6.2Z" opacity="0.72"/>
+    <ellipse cx="56" cy="78" rx="52" ry="37" fill="url(#face)"/>
+    <ellipse cx="56" cy="78" rx="43.5" ry="30.5" fill="#fff"/>
+    <ellipse cx="56" cy="78" rx="35.3" ry="24.8" fill="#0b477f"/>
+    <ellipse cx="56" cy="78" rx="27.2" ry="19" fill="#fff"/>
+    <ellipse cx="56" cy="78" rx="19.1" ry="13.2" fill="#124e84"/>
+    <ellipse cx="56" cy="78" rx="11.2" ry="7.6" fill="#fff"/>
+    <path d="M14.7 65.5C25.2 46.1 55.3 37.9 81.9 47" fill="none" stroke="#fff" stroke-linecap="round" stroke-width="2.2" opacity="0.22"/>
+  </g>
+
+  <g transform="rotate(-3 52 59)">
+    <ellipse cx="52" cy="65.3" rx="16" ry="12.3" fill="#142f4d"/>
+    <ellipse cx="52" cy="63.3" rx="13.2" ry="10.2" fill="url(#collar)" stroke="#1c252d" stroke-width="1.5"/>
+    <ellipse cx="52" cy="61.8" rx="9.2" ry="6.9" fill="#262a2e"/>
+
+    <path d="M52 6.5c-2.6 9.1-8.1 16-13 23.2-4.8 7-7.4 13.1-7.4 19.5 0 12.7 8.7 21.3 20.4 21.3s20.4-8.6 20.4-21.3c0-6.4-2.6-12.5-7.4-19.5-4.9-7.2-10.4-14.1-13-23.2Z" fill="url(#drop)" stroke="#111315" stroke-linejoin="round" stroke-width="1.6"/>
+    <path d="M51.8 10.5c-2.1 8.2-6.6 14.6-10.7 20.9-4.4 6.7-6.7 12.2-6.7 18.1 0 8.2 3.9 14.3 10.2 17.2-4.1-3.3-6.5-8.4-6.5-14.8 0-6 2.1-11.7 6.1-18.6 3.5-6.1 6.7-12.6 7.6-22.8Z" fill="url(#dropHighlight)"/>
+    <path d="M39.3 36.4c2.8-6.2 7.4-12.2 11.2-19.6" fill="none" stroke="#f4f5f5" stroke-linecap="round" stroke-width="2.1" opacity="0.22"/>
+    <ellipse cx="43.8" cy="39" rx="4.1" ry="7.2" fill="#d8dbdd" opacity="0.12" transform="rotate(24 43.8 39)"/>
+  </g>
+</svg>
